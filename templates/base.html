@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}IT Tasks{% endblock %}</title>
+  </head>
+  <body>
+    <header>
+      <a href="{% url 'tracker:task-list' %}">Tasks</a> |
+      {% if request.user.is_authenticated %}
+        Hello, {{ request.user }}!
+      {% endif %}
+    </header>
+    <hr>
+    {% block content %}{% endblock %}
+  </body>
+</html>

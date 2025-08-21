@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ object.name }}{% endblock %}
+{% block content %}
+<h2>{{ object.name }}</h2>
+<p><b>Type:</b> {{ object.task_type.name }}</p>
+<p><b>Priority:</b> {{ object.get_priority_display }}</p>
+<p><b>Deadline:</b> {{ object.deadline|default:"—" }}</p>
+<p><b>Created by:</b> {{ object.creator }}</p>
+<p><b>Assignees:</b> {{ object.assignees.all|join:", " }}</p>
+<p>{{ object.description|linebreaks }}</p>
+<p>
+  <a href="{% url 'tracker:task-update' object.pk %}">Edit</a> |
+  <a href="{% url 'tracker:task-toggle' object.pk %}">Change status</a>
+</p>
+{% endblock %}
