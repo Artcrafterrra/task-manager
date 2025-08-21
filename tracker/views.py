@@ -3,8 +3,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
 
-from tracker.models import Task
-from tracker.forms import TaskForm
+from tracker.models import Task, TaskType
+from tracker.forms import TaskForm, TaskTypeForm
 
 
 class TaskListView(LoginRequiredMixin, generic.ListView):
@@ -57,3 +57,17 @@ def task_toggle_complete(request, pk: int):
     task.is_completed = not task.is_completed
     task.save(update_fields=["is_completed"])
     return redirect(request.META.get("HTTP_REFERER", reverse_lazy("tracker:task-list")))
+
+
+class TaskTypeListView(LoginRequiredMixin, generic.ListView):
+    model = TaskType
+    template_name = "tracker/tasktype_list.html"
+    context_object_name = "types"
+    paginate_by = 20
+    ordering = ["name"]
+
+class TaskTypeCreateView(LoginRequiredMixin, generic.CreateView):
+    model = TaskType
+    form_class = TaskTypeForm
+    template_name = "tracker/tasktype_form.html"
+    success_url = reverse_lazy("tracker:tasktype-list")
