@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<h1>Tasks</h1>
+
+<p>
+  <a href="?my=1">My</a> |
+  <a href="?done=0">Incomplete</a> |
+  <a href="?done=1">Completed</a> |
+  <a href="{% url 'tracker:task-create' %}">+ Create</a>
+</p>
+
+<ul>
+  {% for task in object_list %}
+    <li>
+      <a href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
+      — {{ task.task_type.name }} — {{ task.get_priority_display }}
+      {% if task.deadline %} — deadline: {{ task.deadline }}{% endif %}
+      — assignees: {{ task.assignees.all|join:", " }}
+      — {% if task.is_completed %}✅{% else %}❌{% endif %}
+      — <a href="{% url 'tracker:task-toggle' task.pk %}">toggle</a>
+    </li>
+  {% empty %}
+    <li>No tasks yet.</li>
+  {% endfor %}
+</ul>
+
+{% if is_paginated %}
+  <div>
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">←</a>{% endif %}
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">→</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}
