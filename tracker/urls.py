@@ -1,6 +1,10 @@
 from django.urls import path
-from views import (
-    v
+from tracker.views import (
+    TaskListView,
+    TaskCreateView,
+    TaskDetailView,
+    TaskUpdateView,
+    task_toggle_complete
 )
 
 app_name = "tracker"
