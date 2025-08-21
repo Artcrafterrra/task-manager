@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Task Types{% endblock %}
+{% block content %}
+  <h1>Task Types</h1>
+  <p><a href="{% url 'tracker:tasktype-create' %}">+ Add Type</a></p>
+  <ul>
+    {% for t in types %}
+      <li>{{ t.name }}</li>
+    {% empty %}
+      <li>No types yet.</li>
+    {% endfor %}
+  </ul>
+
+  {% if is_paginated %}
+    <div>
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">←</a>{% endif %}
+      Page {{ page_obj.number }} of {{ paginator.num_pages }}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">→</a>{% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

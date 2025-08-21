@@ -1,5 +1,6 @@
 from django import forms
-from .models import Task
+from tracker.models import Task, TaskType
+
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -16,3 +17,15 @@ class TaskForm(forms.ModelForm):
         widgets = {
             "deadline": forms.DateInput(attrs={"type": "date"}),
         }
+
+
+class TaskTypeForm(forms.ModelForm):
+    class Meta:
+        model = TaskType
+        fields = ["name"]
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if TaskType.objects.filter(name__iexact=name).exists():
+            raise forms.ValidationError("Such task type already exists.")
+        return name

@@ -4,7 +4,9 @@ from tracker.views import (
     TaskCreateView,
     TaskDetailView,
     TaskUpdateView,
-    task_toggle_complete
+    task_toggle_complete,
+    TaskTypeListView,
+    TaskTypeCreateView
 )
 
 app_name = "tracker"
@@ -15,4 +17,6 @@ urlpatterns = [
     path("tasks/<int:pk>/", TaskDetailView.as_view(), name="task-detail"),
     path("tasks/<int:pk>/update/", TaskUpdateView.as_view(), name="task-update"),
     path("tasks/<int:pk>/toggle/", task_toggle_complete, name="task-toggle"),
+    path("types/", TaskTypeListView.as_view(), name="tasktype-list"),
+    path("types/create/", TaskTypeCreateView.as_view(), name="tasktype-create"),
 ]
