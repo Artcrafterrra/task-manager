@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Реєстрація{% endblock %}
+{% block content %}
+  <h1>Registration</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+      {{ form.username.label_tag }} {{ form.username }}
+      {{ form.username.errors }}
+    </p>
+    <p>
+      {{ form.first_name.label_tag }} {{ form.first_name }}
+      {{ form.first_name.errors }}
+    </p>
+    <p>
+      {{ form.last_name.label_tag }} {{ form.last_name }}
+      {{ form.last_name.errors }}
+    </p>
+    <p>
+      {{ form.email.label_tag }} {{ form.email }}
+      {{ form.email.errors }}
+    </p>
+    <p>
+      {{ form.password1.label_tag }} {{ form.password1 }}
+      {{ form.password1.errors }}
+    </p>
+    <p>
+      {{ form.password2.label_tag }} {{ form.password2 }}
+      {{ form.password2.errors }}
+    </p>
+    <button type="submit">Sign up</button>
+  </form>
+  <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}

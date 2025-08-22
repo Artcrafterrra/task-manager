@@ -1,10 +1,13 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
 
 from tracker.models import Task, TaskType
-from tracker.forms import TaskForm, TaskTypeForm
+from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
+
+User = get_user_model()
 
 
 class TaskListView(LoginRequiredMixin, generic.ListView):
@@ -71,3 +74,27 @@ class TaskTypeCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = TaskTypeForm
     template_name = "tracker/tasktype_form.html"
     success_url = reverse_lazy("tracker:tasktype-list")
+
+
+class SignUpView(UserPassesTestMixin, generic.CreateView):
+    form_class = SignUpForm
+    template_name = "registration/signup.html"
+    success_url = reverse_lazy("tracker:task-list")
+
+    def test_func(self):
+        return not self.request.user.is_authenticated
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        return response
+
+    def get_success_url(self):
+        from django.conf import settings
+        return getattr(settings, "LOGIN_REDIRECT_URL", str(self.success_url))
+
+    def get_object(self, queryset=None):
+        return None
