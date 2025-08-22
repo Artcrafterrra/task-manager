@@ -1,8 +1,21 @@
 from django import forms
+from django.contrib.auth import get_user_model
+
 from tracker.models import Task, TaskType
 
 
+User = get_user_model()
+
+
 class TaskForm(forms.ModelForm):
+    assignees = forms.ModelMultipleChoiceField(
+        queryset=User.objects.filter(is_active=True, is_superuser=False),  # тільки активні, без суперюзерів
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="assignees",
+    )
+
+
     class Meta:
         model = Task
         fields = [
@@ -17,6 +30,14 @@ class TaskForm(forms.ModelForm):
         widgets = {
             "deadline": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["assignees"].queryset = (
+            User.objects.filter(is_superuser=False, is_active=True)
+            .select_related("position")
+            .order_by("first_name", "last_name", "username")
+        )
 
 
 class TaskTypeForm(forms.ModelForm):

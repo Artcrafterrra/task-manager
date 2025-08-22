@@ -17,7 +17,9 @@
       <a href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
       — {{ task.task_type.name }} — {{ task.get_priority_display }}
       {% if task.deadline %} — deadline: {{ task.deadline }}{% endif %}
-      — assignees: {{ task.assignees.all|join:", " }}
+      — assignees:
+          {{ form.assignees.label_tag }}
+          {{ form.assignees }}
       — {% if task.is_completed %}✅{% else %}❌{% endif %}
       — <a href="{% url 'tracker:task-toggle' task.pk %}">toggle</a>
     </li>
