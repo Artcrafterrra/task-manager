@@ -9,6 +9,14 @@
       <a href="{% url 'tracker:task-list' %}">Tasks</a> |
       {% if request.user.is_authenticated %}
         Hello, {{ request.user }}!
+      <form method="post" action="{% url 'logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" style="background:none;border:none;color:#06c;cursor:pointer;">
+          Logout
+        </button>
+  </form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
       {% endif %}
     </header>
     <hr>
