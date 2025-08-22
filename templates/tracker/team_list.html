@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Мої тімси{% endblock %}
+{% block content %}
+  <h1>My teams</h1>
+  <ul>
+    {% for t in teams %}
+      <li>{{ t.name }}</li>
+    {% empty %}
+      <li>No teams</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

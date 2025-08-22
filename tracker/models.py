@@ -49,11 +49,23 @@ class Team(models.Model):
     name = models.CharField(max_length=80, unique=True)
     members = models.ManyToManyField("Worker", related_name="teams", blank=True)
 
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
 
 class Project(models.Model):
     name = models.CharField(max_length=120, unique=True)
     team = models.ForeignKey(Team, on_delete=models.PROTECT, related_name="projects")
     description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Task(models.Model):

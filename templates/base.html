@@ -5,22 +5,28 @@
     <title>{% block title %}IT Tasks{% endblock %}</title>
   </head>
   <body>
-    <header>
+    <header style="padding:10px 12px; border-bottom:1px solid #e5e5e5;">
       <a href="{% url 'tracker:task-list' %}">Tasks</a> |
       {% if request.user.is_authenticated %}
         Hello, {{ request.user }}!
-      <form method="post" action="{% url 'logout' %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" style="background:none;border:none;color:#06c;cursor:pointer;">
-          Logout
-        </button>
-  </form>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:none;color:#06c;cursor:pointer;">
+            Logout
+          </button>
+        </form>
       {% else %}
-        <a href="{% url 'login' %}">Login</a> |
-        <a href="{% url 'signup' %}">Sign up</a>
+        <a href="{% url 'login' %}">Login</a> / <a href="{% url 'signup' %}">Sign up</a>
       {% endif %}
     </header>
-    <hr>
-    {% block content %}{% endblock %}
+
+    <div style="display:flex; min-height: calc(100vh - 52px);">
+      {% if request.user.is_authenticated %}
+        {% include "includes/sidebar.html" %}
+      {% endif %}
+      <main style="flex:1; padding:16px;">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
   </body>
 </html>
