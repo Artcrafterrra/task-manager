@@ -1,0 +1,13 @@
+{# tracker/templates/tracker/project_list.html #}
+{% extends "base.html" %}
+{% block title %}My progects{% endblock %}
+{% block content %}
+  <h1>My progects</h1>
+  <ul>
+    {% for p in projects %}
+      <li>{{ p.name }} — {{ p.team.name }}</li>
+    {% empty %}
+      <li>No progect</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

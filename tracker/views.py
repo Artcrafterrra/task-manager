@@ -4,7 +4,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
 
-from tracker.models import Task, TaskType
+from tracker.models import Task, TaskType, Project, Team
 from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
 
 User = get_user_model()
@@ -98,3 +98,18 @@ class SignUpView(UserPassesTestMixin, generic.CreateView):
 
     def get_object(self, queryset=None):
         return None
+
+
+class MyProjectListView(LoginRequiredMixin, generic.ListView):
+    model = Project
+    template_name = "tracker/project_list.html"
+    context_object_name = "projects"
+    def get_queryset(self):
+        return Project.objects.filter(team__members=self.request.user).order_by("name").distinct()
+
+class MyTeamListView(LoginRequiredMixin, generic.ListView):
+    model = Team
+    template_name = "tracker/team_list.html"
+    context_object_name = "teams"
+    def get_queryset(self):
+        return Team.objects.filter(members=self.request.user).order_by("name")

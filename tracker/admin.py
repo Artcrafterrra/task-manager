@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Position, TaskType, Worker, Task
+from tracker.models import Position, TaskType, Worker, Task, Team, Project
 
 
 @admin.register(Position)
@@ -30,3 +30,16 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ("name", "description")
     autocomplete_fields = ("task_type", "assignees", "creator")
     filter_horizontal = ("assignees",)
+
+
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    filter_horizontal = ("members",)
+
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ("name", "team")
+    search_fields = ["name"]
+    autocomplete_fields = ("team",)
