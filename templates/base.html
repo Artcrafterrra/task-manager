@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}IT Tasks{% endblock %}</title>
 
+    {% load static %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.1/dist/css/coreui.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@coreui/icons@3.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
     <style>
       .app-body { display: flex; min-height: calc(100vh - 56px); }
