@@ -9,9 +9,7 @@ User = get_user_model()
 
 class TaskForm(forms.ModelForm):
     assignees = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(
-            is_active=True, is_superuser=False
-        ),
+        queryset=User.objects.filter(is_active=True, is_superuser=False),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="assignees",
@@ -88,7 +86,9 @@ class TaskTypeForm(forms.ModelForm):
         # Ensure all fields have CoreUI/Bootstrap styles if added later
         for f in self.fields.values():
             css = f.widget.attrs.get("class", "")
-            if "form-control" not in css and not isinstance(f.widget, forms.CheckboxInput):
+            if "form-control" not in css and not isinstance(
+                f.widget, forms.CheckboxInput
+            ):
                 f.widget.attrs["class"] = (css + " form-control").strip()
 
     def clean_name(self):
