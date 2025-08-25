@@ -1,15 +1,61 @@
 {% extends "base.html" %}
 {% block title %}My progects{% endblock %}
 {% block content %}
-  <h1>My progects</h1>
-  <ul>
-    {% for p in projects %}
-      <li>
-        <a href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a> — {{ p.team.name }}
-        <a href="{% url 'tracker:task-create-in-project' p.pk %}" style="margin-left:8px;">Create task</a>
-      </li>
-    {% empty %}
-      <li>No progect</li>
-    {% endfor %}
-  </ul>
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+        <div class="me-auto">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <strong>My projects</strong>
+            <span class="small text-secondary">
+              {% if page_obj %}Found: {{ page_obj.paginator.count }}{% else %}Found: {{ projects|length }}{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      {% if projects %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:45%;">Name</th>
+                <th style="width:35%;">Team</th>
+                <th style="width:20%;" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in projects %}
+                <tr>
+                  <td>
+                    <a class="fw-semibold link-plain" href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a>
+                  </td>
+                  <td>
+                    <span class="text-secondary">{{ p.team.name }}</span>
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary me-1" href="{% url 'tracker:project-tasks' p.pk %}">
+                      <i class="cil-list me-1"></i>View
+                    </a>
+                    <a class="btn btn-sm btn-primary" href="{% url 'tracker:task-create-in-project' p.pk %}">
+                      <i class="cil-plus me-1"></i>Create task
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-5 text-center">
+          <div class="mb-2">
+            <span class="badge text-bg-light">No projects</span>
+          </div>
+          <div class="text-secondary">You don’t have any projects yet.</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
