@@ -89,6 +89,7 @@ class TaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
     model = Task
     paginate_by = 20
     template_name = "tracker/task_list.html"
+    context_object_name = "tasks"
     allowed_filters = {"q", "priority", "my", "created", "done"}
 
     def get_queryset(self):
