@@ -11,7 +11,7 @@ class TaskForm(forms.ModelForm):
     assignees = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(
             is_active=True, is_superuser=False
-        ),  # тільки активні, без суперюзерів
+        ),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="assignees",
@@ -28,6 +28,27 @@ class TaskForm(forms.ModelForm):
             "assignees",
             "project",
         ]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Task name"}
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Describe the task...",
+                    "rows": 8,
+                }
+            ),
+            "deadline": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }
+            ),
+            "priority": forms.Select(attrs={"class": "form-select"}),
+            "task_type": forms.Select(attrs={"class": "form-select"}),
+            "project": forms.Select(attrs={"class": "form-select"}),
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -46,6 +67,29 @@ class TaskTypeForm(forms.ModelForm):
     class Meta:
         model = TaskType
         fields = ["name"]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Type name",
+                    "autofocus": "autofocus",
+                }
+            ),
+        }
+        labels = {
+            "name": "Name",
+        }
+        help_texts = {
+            "name": "Enter a short, clear name for the task type.",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure all fields have CoreUI/Bootstrap styles if added later
+        for f in self.fields.values():
+            css = f.widget.attrs.get("class", "")
+            if "form-control" not in css and not isinstance(f.widget, forms.CheckboxInput):
+                f.widget.attrs["class"] = (css + " form-control").strip()
 
     def clean_name(self):
         name = self.cleaned_data["name"].strip()
@@ -76,31 +120,4 @@ class SignUpForm(UserCreationForm):
             raise forms.ValidationError(
                 "User with such email already exists."
             )
-        return email
-
-
-class SignUpForm(UserCreationForm):
-    email = forms.EmailField(required=False)
-    position = forms.ModelChoiceField(
-        queryset=Position.objects.all(), required=True
-    )
-
-    class Meta(UserCreationForm.Meta):
-        model = User
-        fields = (
-            "username",
-            "first_name",
-            "last_name",
-            "email",
-            "password1",
-            "password2",
-            "position",
-        )
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if email and User.objects.filter(email__iexact=email).exists():
-            from django.core.exceptions import ValidationError
-
-            raise ValidationError("User with such email already exists.")
         return email

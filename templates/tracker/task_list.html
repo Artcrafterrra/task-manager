@@ -89,7 +89,6 @@
                     {% endfor %}
                   </td>
                   <td>{{ task.deadline|default:"—" }}</td>
-                  <!-- Status: по центру колонки, напівпрозора іконка -->
                   <td class="text-center" style="width:60px;">
                     <a href="{% url 'tracker:task-toggle' task.pk %}"
                        class="btn btn-sm {% if task.is_completed %}btn-success{% else %}btn-info{% endif %} rounded-circle d-inline-flex align-items-center justify-content-center p-0 mx-auto opacity-75 shadow-none"
@@ -124,6 +123,5 @@
       {% endif %}
       {% endwith %}
     </div>
-    <!-- Пагінацію з цього шаблону видалено: вона рендериться у base.html -->
   </div>
 {% endblock %}
