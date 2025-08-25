@@ -45,6 +45,10 @@ class TaskFiltersMixin:
     allowed_filters = set()
 
     def apply_task_filters(self, qs):
+        # Якщо в користувача немає позиції — не показуємо жодних задач
+        if not getattr(self.request.user, "position_id", None):
+            return qs.none()
+
         if "q" in self.allowed_filters:
             if q := self.request.GET.get("q"):
                 qs = qs.filter(
@@ -333,12 +337,15 @@ class UserProfileView(
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         profile_user = self.object
-        ctx["current_tasks"] = (
-            Task.objects.filter(assignees=profile_user, is_completed=False)
-            .select_related("task_type", "creator")
-            .prefetch_related("assignees")
-            .order_by("deadline", "-priority", "-created_at")
-        )
+        if getattr(profile_user, "position_id", None):
+            ctx["current_tasks"] = (
+                Task.objects.filter(assignees=profile_user, is_completed=False)
+                .select_related("task_type", "creator")
+                .prefetch_related("assignees")
+                .order_by("deadline", "-priority", "-created_at")
+            )
+        else:
+            ctx["current_tasks"] = Task.objects.none()
         return ctx
 
 
