@@ -1,15 +1,60 @@
 {% extends "base.html" %}
 {% block title %}{{ object.name }}{% endblock %}
 {% block content %}
-<h2>{{ object.name }}</h2>
-<p><b>Type:</b> {{ object.task_type.name }}</p>
-<p><b>Priority:</b> {{ object.get_priority_display }}</p>
-<p><b>Deadline:</b> {{ object.deadline|default:"—" }}</p>
-<p><b>Created by:</b> {{ object.creator }}</p>
-<p><b>Assignees:</b> {{ object.assignees.all|join:", " }}</p>
-<p>{{ object.description|linebreaks }}</p>
-<p>
-  <a href="{% url 'tracker:task-update' object.pk %}">Edit</a> |
-  <a href="{% url 'tracker:task-toggle' object.pk %}">Change status</a>
-</p>
+<div class="card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <strong class="fs-5">{{ object.name }}</strong>
+      {% if object.is_completed %}
+        <span title="Done" aria-label="Done">✅</span>
+      {% else %}
+        <span title="Open" aria-label="Open">⏳</span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:task-update' object.pk %}">Edit</a>
+      <form action="{% url 'tracker:task-toggle' object.pk %}" method="post" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-primary">Toggle status</button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Type</span></div>
+        <div>{{ object.task_type.name|default:"—" }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Priority</span></div>
+        <div>{{ object.get_priority_display }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Deadline</span></div>
+        <div>{% if object.deadline %}🗓️ {{ object.deadline }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Created by</span></div>
+        <div>{{ object.creator }}</div>
+      </div>
+      <div class="col-12">
+        <div><span class="text-secondary small">Assignees</span></div>
+        <div>
+          {% for a in object.assignees.all %}
+            <span class="badge text-bg-light me-1">{{ a.username }}</span>
+          {% empty %}
+            <span class="text-secondary">—</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% if object.description %}
+      <hr>
+      <div>
+        <span class="text-secondary small">Description</span>
+        <div class="mt-1">{{ object.description|linebreaks }}</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
