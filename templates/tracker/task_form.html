@@ -1,10 +1,94 @@
 {% extends "base.html" %}
-{% block title %}Create Task{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit Task{% else %}Create Task{% endif %}{% endblock %}
 {% block content %}
-  <h1>Create Task</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-  </form>
+  <div class="card">
+    <div class="card-header">
+      <strong>{% if form.instance.pk %}Edit Task{% else %}Create Task{% endif %}</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 mb-3">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <!-- Name (form-floating) -->
+            <div class="form-floating mb-3">
+              {{ form.name }}
+              <label for="{{ form.name.id_for_label }}">Name</label>
+              {% for err in form.name.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+
+            <!-- Description (form-floating for textarea) -->
+            <div class="form-floating">
+              {{ form.description }}
+              <label for="{{ form.description.id_for_label }}">Description</label>
+              {% for err in form.description.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+            <style>
+              textarea#{{ form.description.id_for_label }} {
+                min-height: 180px;
+              }
+            </style>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="mb-3">
+              <label for="{{ form.project.id_for_label }}" class="form-label d-block">Project</label>
+              {{ form.project }}
+              {% for err in form.project.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.task_type.id_for_label }}" class="form-label d-block">Type</label>
+              {{ form.task_type }}
+              {% for err in form.task_type.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.priority.id_for_label }}" class="form-label d-block">Priority</label>
+              {{ form.priority }}
+              {% for err in form.priority.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.deadline.id_for_label }}" class="form-label d-block">Deadline</label>
+              {{ form.deadline }}
+              <div class="form-text">Optional</div>
+              {% for err in form.deadline.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="mb-2"><strong>Assignees</strong></div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2">
+              {% for cb in form.assignees %}
+                <div class="col">
+                  <div class="form-check">
+                    {{ cb.tag|safe }}
+                    <label class="form-check-label ms-1" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            {% for err in form.assignees.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a href="{% url 'tracker:task-list' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="cil-x me-1"></i>Cancel
+          </a>
+          <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center">
+            <i class="cil-save me-1"></i>Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}

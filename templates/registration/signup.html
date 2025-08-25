@@ -1,47 +1,99 @@
 {% extends "base.html" %}
-{% block title %}Реєстрація{% endblock %}
+{% block title %}Registration{% endblock %}
 {% block content %}
-  <h1>Registration</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <p>
-      {{ form.username.label_tag }} {{ form.username }}
-      {{ form.username.errors }}
-    </p>
-    <p>
-      {{ form.first_name.label_tag }} {{ form.first_name }}
-      {{ form.first_name.errors }}
-    </p>
-    <p>
-      {{ form.last_name.label_tag }} {{ form.last_name }}
-      {{ form.last_name.errors }}
-    </p>
-    <p>
-      {{ form.email.label_tag }} {{ form.email }}
-      {{ form.email.errors }}
-    </p>
-    <p>
-      {{ form.position.label_tag }} {{ form.position }}
-      {{ form.position.errors }}
-    </p>
-    <p>
-      {{ form.password1.label_tag }} {{ form.password1 }}
-      {{ form.password1.errors }}
-    </p>
-    <p>
-      {{ form.password2.label_tag }} {{ form.password2 }}
-      {{ form.password2.errors }}
-    </p>
-    <button type="submit">Sign up</button>
-  </form>
-  <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
-  <hr>
-  {% load socialaccount %}
-  <p>Або продовжити через:</p>
-  <p>
-    <a href="{% provider_login_url 'google' %}" style="display:inline-block;padding:8px 12px;background:#fff;border:1px solid #ddd;border-radius:4px;text-decoration:none;">
-      Увійти з Google
-    </a>
-  </p>
+  <div class="card">
+    <div class="card-header">
+      <strong>Registration</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 mb-3">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.username.id_for_label }}" class="form-label d-block">Username</label>
+              {{ form.username }}
+              {% for err in form.username.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.email.id_for_label }}" class="form-label d-block">Email</label>
+              {{ form.email }}
+              {% for err in form.email.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.first_name.id_for_label }}" class="form-label d-block">First name</label>
+              {{ form.first_name }}
+              {% for err in form.first_name.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.last_name.id_for_label }}" class="form-label d-block">Last name</label>
+              {{ form.last_name }}
+              {% for err in form.last_name.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.position.id_for_label }}" class="form-label d-block">Position</label>
+              {{ form.position }}
+              {% for err in form.position.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6"></div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.password1.id_for_label }}" class="form-label d-block">Password</label>
+              {{ form.password1 }}
+              {% for err in form.password1.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="mb-2">
+              <label for="{{ form.password2.id_for_label }}" class="form-label d-block">Password confirmation</label>
+              {{ form.password2 }}
+              {% for err in form.password2.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <a href="{% url 'login' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="cil-account-logout me-1"></i>Login
+          </a>
+          <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center">
+            <i class="cil-user-follow me-1"></i>Sign up
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+
+      {% load socialaccount %}
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-secondary">Or continue with:</div>
+        <a href="{% provider_login_url 'google' process='login' %}"
+           class="btn btn-sm btn-outline-danger d-inline-flex align-items-center">
+          <i class="cib-google me-1"></i> Sign in with Google
+        </a>
+      </div>
+    </div>
+  </div>
 {% endblock %}

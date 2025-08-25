@@ -162,3 +162,6 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"access_type": "online"},
     }
 }
+
+# Автоматично переходити на провайдера без проміжної сторінки підтвердження
+SOCIALACCOUNT_LOGIN_ON_GET = True
