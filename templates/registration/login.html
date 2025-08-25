@@ -2,13 +2,11 @@
 {% load socialaccount %}
 {% block title %}Login{% endblock %}
 {% block content %}
-  <!-- ... existing code ... -->
   <h1>Login</h1>
 
   <form method="post" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
-    <!-- ... existing code for username/password fields ... -->
     <p>
       {{ form.username.label_tag }} {{ form.username }}
       {{ form.username.errors }}
@@ -28,5 +26,4 @@
       Log in via Google
     </a>
   </p>
-  <!-- ... existing code ... -->
 {% endblock %}
