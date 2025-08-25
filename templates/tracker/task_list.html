@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Tasks{% endblock %}
 {% block content %}
+  <form method="get" style="margin-bottom:12px;">
+  <input type="text" name="q" placeholder="Search tasks..." value="{{ search_query }}">
+  <button type="submit">Search</button>
+  {% if request.GET.my %}<input type="hidden" name="my" value="{{ request.GET.my }}">{% endif %}
+  {% if request.GET.created %}<input type="hidden" name="created" value="{{ request.GET.created }}">{% endif %}
+  {% if request.GET.done %}<input type="hidden" name="done" value="{{ request.GET.done }}">{% endif %}
+  {% if request.GET.priority %}<input type="hidden" name="priority" value="{{ request.GET.priority }}">{% endif %}
+  </form>
+
 <h1>Tasks</h1>
 
 <p>
