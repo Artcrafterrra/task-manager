@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
+from django.db.models import Q
 
 from tracker.models import Task, TaskType, Project, Team
 from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
@@ -31,7 +32,14 @@ class TaskListView(LoginRequiredMixin, generic.ListView):
             qs = qs.filter(is_completed=False)
         if pr := self.request.GET.get("priority"):
             qs = qs.filter(priority=pr)
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
         return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["search_query"] = self.request.GET.get("q", "")
+        return ctx
 
 
 class TaskDetailView(LoginRequiredMixin, generic.DetailView):
@@ -182,10 +190,14 @@ class TeamTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView
             .filter(project__team_id=self.kwargs["pk"])
             .order_by("-created_at")
         )
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["team"] = get_object_or_404(Team, pk=self.kwargs["pk"])
+        ctx["search_query"] = self.request.GET.get("q", "")
         return ctx
 
 class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
@@ -208,10 +220,14 @@ class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListV
             .filter(project_id=self.kwargs["pk"])
             .order_by("-created_at")
         )
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["project"] = get_object_or_404(Project, pk=self.kwargs["pk"])
+        ctx["search_query"] = self.request.GET.get("q", "")
         return ctx
 
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
