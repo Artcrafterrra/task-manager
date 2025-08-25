@@ -138,6 +138,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
+
+ACCOUNT_LOGIN_REDIRECT_URL = LOGIN_REDIRECT_URL
+
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 LOGIN_URL = "/accounts/login/"
@@ -163,5 +167,5 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Автоматично переходити на провайдера без проміжної сторінки підтвердження
+
 SOCIALACCOUNT_LOGIN_ON_GET = True

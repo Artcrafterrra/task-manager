@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.simple_tag(takes_context=True)
 def url_with_query(context, base_url, **kwargs):
 
