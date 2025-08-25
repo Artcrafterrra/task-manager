@@ -36,8 +36,12 @@ class TestModels(TestCase):
         self.assertEqual(str(task), "Fix login")
 
     def test_task_indexes_and_ordering(self):
-        t1 = Task.objects.create(name="A", task_type=self.task_type, creator=self.creator)
-        t2 = Task.objects.create(name="B", task_type=self.task_type, creator=self.creator)
+        t1 = Task.objects.create(
+            name="A", task_type=self.task_type, creator=self.creator
+        )
+        t2 = Task.objects.create(
+            name="B", task_type=self.task_type, creator=self.creator
+        )
         self.assertEqual(list(Task.objects.all()), [t2, t1])
 
     def test_task_deadline_check_constraint(self):

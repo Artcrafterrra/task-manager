@@ -9,12 +9,13 @@ User = get_user_model()
 
 class TaskForm(forms.ModelForm):
     assignees = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(is_active=True, is_superuser=False),  # тільки активні, без суперюзерів
+        queryset=User.objects.filter(
+            is_active=True, is_superuser=False
+        ),  # тільки активні, без суперюзерів
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="assignees",
     )
-
 
     class Meta:
         model = Task
@@ -54,8 +55,12 @@ class TaskTypeForm(forms.ModelForm):
 
 
 class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=150, required=False, label="First name")
-    last_name = forms.CharField(max_length=150, required=False, label="Last name")
+    first_name = forms.CharField(
+        max_length=150, required=False, label="First name"
+    )
+    last_name = forms.CharField(
+        max_length=150, required=False, label="Last name"
+    )
     email = forms.EmailField(required=False, label="Email")
     position = forms.ModelChoiceField(
         queryset=Position.objects.all(), required=False, label="Position"
@@ -68,13 +73,17 @@ class SignUpForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip().lower()
         if email and User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError("User with such email already exists.")
+            raise forms.ValidationError(
+                "User with such email already exists."
+            )
         return email
 
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=False)
-    position = forms.ModelChoiceField(queryset=Position.objects.all(), required=True)
+    position = forms.ModelChoiceField(
+        queryset=Position.objects.all(), required=True
+    )
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -92,5 +101,6 @@ class SignUpForm(UserCreationForm):
         email = self.cleaned_data.get("email")
         if email and User.objects.filter(email__iexact=email).exists():
             from django.core.exceptions import ValidationError
+
             raise ValidationError("User with such email already exists.")
         return email

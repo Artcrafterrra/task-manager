@@ -3,6 +3,7 @@ from .models import Task, Project, Team
 
 User = get_user_model()
 
+
 def sidebar(request):
     if not request.user.is_authenticated:
         return {}
@@ -11,11 +12,13 @@ def sidebar(request):
     my_open_tasks = (
         Task.objects.filter(assignees=user, is_completed=False)
         .select_related("task_type")
-        .order_by("deadline", "-priority", "-created_at")[:10]
+        .order_by("-created_at")[:5]
     )
 
     teams = Team.objects.filter(members=user).order_by("name")
-    projects = Project.objects.filter(team__members=user).order_by("name").distinct()
+    projects = (
+        Project.objects.filter(team__members=user).order_by("name").distinct()
+    )
 
     return {
         "sb_user": user,

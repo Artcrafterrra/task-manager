@@ -1,69 +1,65 @@
-<aside style="width:260px; padding:12px; border-right:1px solid #e5e5e5;">
-  <div style="margin-bottom:18px;">
-    <h3 style="margin:0 0 6px;">My Tasks</h3>
-    <div style="font-size:14px; margin-bottom:8px;">
-      <div><strong>{{ sb_user.get_full_name|default:sb_user.username }}</strong></div>
-      <div style="color:#666;">
-        {{ sb_user.position.name|default:"No position" }}
-      </div>
-    </div>
+<nav class="sidebar-nav">
+  <ul class="nav flex-column">
 
+    <!-- Brand / User -->
+    <li class="nav-item px-3 pt-3 pb-2">
+      <div class="fw-semibold">{{ sb_user.get_full_name|default:sb_user.username }}</div>
+      <div class="text-secondary small">{{ sb_user.position.name|default:"No position" }}</div>
+    </li>
+
+    <!-- My Tasks -->
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-2">My Tasks</li>
     {% if sb_my_open_tasks %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for t in sb_my_open_tasks %}
-          <li style="margin:6px 0;">
-            <a href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
-            {% if t.deadline %}<small style="color:#666;">(by {{ t.deadline }})</small>{% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-      <div style="margin-top:8px;">
-        <a href="{% url 'tracker:task-list' %}?my=1&done=0">Show all</a>
-      </div>
+      {% for t in sb_my_open_tasks %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
+            {% if t.deadline %}<small class="text-secondary ms-2">{{ t.deadline }}</small>{% endif %}
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mb-2">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:task-list' %}?my=1&done=0">Show all</a>
+      </li>
     {% else %}
-      <div style="color:#666;">No open tasks</div>
+      <li class="nav-item px-3 text-secondary small">No open tasks</li>
     {% endif %}
-  </div>
 
-  <div style="margin-bottom:18px;">
-    <h3 style="margin:0 0 6px;">My Projects</h3>
+    <!-- My Projects -->
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-3">My Projects</li>
     {% if sb_projects %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for p in sb_projects %}
-          <li style="margin:6px 0;">
-            <a href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a>
-            <small style="margin-left:8px;">
-              <a href="{% url 'tracker:task-create-in-project' p.pk %}">Create</a>
-            </small>
-          </li>
-        {% endfor %}
-      </ul>
-      <div style="margin-top:8px;">
-        <a href="{% url 'tracker:project-list' %}">All projects</a>
-      </div>
+      {% for p in sb_projects %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'tracker:task-create-in-project' p.pk %}">Create</a>
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:project-list' %}">All projects</a>
+      </li>
     {% else %}
-      <div style="color:#666;">No projects yet</div>
+      <li class="nav-item px-3 text-secondary small">No projects yet</li>
     {% endif %}
-  </div>
 
-  <div>
-    <h3 style="margin:0 0 6px;">My Teams</h3>
+    <!-- My Teams -->
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-3">My Teams</li>
     {% if sb_teams %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for tm in sb_teams %}
-          <li style="margin:6px 0;">
-            <a href="{% url 'tracker:team-tasks' tm.pk %}">{{ tm.name }}</a>
-            <small style="margin-left:6px; color:#666;">
-              <a href="{% url 'tracker:team-projects' tm.pk %}">Projects</a>
-            </small>
-          </li>
-        {% endfor %}
-      </ul>
-      <div style="margin-top:8px;">
-        <a href="{% url 'tracker:team-list' %}">All teams</a>
-      </div>
+      {% for tm in sb_teams %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:team-tasks' tm.pk %}">{{ tm.name }}</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'tracker:team-projects' tm.pk %}">Projects</a>
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mt-2 mb-3">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:team-list' %}">All teams</a>
+      </li>
     {% else %}
-      <div style="color:#666;">No teams yet</div>
+      <li class="nav-item px-3 text-secondary small">No teams yet</li>
     {% endif %}
-  </div>
-</aside>
+
+  </ul>
+</nav>
