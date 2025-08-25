@@ -8,7 +8,10 @@ from tracker.views import (
     TaskTypeListView,
     TaskTypeCreateView,
     MyProjectListView,
-    MyTeamListView
+    MyTeamListView,
+    TeamProjectListView,
+    TeamTaskListView,
+    ProjectTaskListView,
 )
 
 app_name = "tracker"
@@ -22,5 +25,9 @@ urlpatterns = [
     path("types/", TaskTypeListView.as_view(), name="tasktype-list"),
     path("types/create/", TaskTypeCreateView.as_view(), name="tasktype-create"),
     path("projects/", MyProjectListView.as_view(), name="project-list"),
+    path("projects/<int:pk>/tasks/", ProjectTaskListView.as_view(), name="project-tasks"),
+    path("projects/<int:project_pk>/tasks/create/", TaskCreateView.as_view(), name="task-create-in-project"),
     path("teams/", MyTeamListView.as_view(), name="team-list"),
+    path("teams/<int:pk>/projects/", TeamProjectListView.as_view(), name="team-projects"),
+    path("teams/<int:pk>/tasks/", TeamTaskListView.as_view(), name="team-tasks"),
 ]

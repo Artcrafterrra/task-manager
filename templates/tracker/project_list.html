@@ -1,11 +1,13 @@
-{# tracker/templates/tracker/project_list.html #}
 {% extends "base.html" %}
 {% block title %}My progects{% endblock %}
 {% block content %}
   <h1>My progects</h1>
   <ul>
     {% for p in projects %}
-      <li>{{ p.name }} — {{ p.team.name }}</li>
+      <li>
+        <a href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a> — {{ p.team.name }}
+        <a href="{% url 'tracker:task-create-in-project' p.pk %}" style="margin-left:8px;">Create task</a>
+      </li>
     {% empty %}
       <li>No progect</li>
     {% endfor %}

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from tracker.models import Task, TaskType, Position
+from tracker.models import Task, Project, TaskType, Position
 
 User = get_user_model()
 
@@ -25,19 +25,20 @@ class TaskForm(forms.ModelForm):
             "priority",
             "task_type",
             "assignees",
-            "is_completed",
+            "project",
         ]
-        widgets = {
-            "deadline": forms.DateInput(attrs={"type": "date"}),
-        }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        self.fields["assignees"].queryset = (
-            User.objects.filter(is_superuser=False, is_active=True)
-            .select_related("position")
-            .order_by("first_name", "last_name", "username")
-        )
+        if "project" in self.fields:
+            if self.user and getattr(self.user, "is_authenticated", False):
+                self.fields["project"].queryset = (
+                    Project.objects.filter(team__members=self.user)
+                    .order_by("name")
+                    .distinct()
+                )
+            self.fields["project"].label = "Project"
 
 
 class TaskTypeForm(forms.ModelForm):

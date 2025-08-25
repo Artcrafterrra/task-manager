@@ -31,7 +31,10 @@
       <ul style="list-style:none; padding:0; margin:0;">
         {% for p in sb_projects %}
           <li style="margin:6px 0;">
-            {{ p.name }}
+            <a href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a>
+            <small style="margin-left:8px;">
+              <a href="{% url 'tracker:task-create-in-project' p.pk %}">Create</a>
+            </small>
           </li>
         {% endfor %}
       </ul>
@@ -48,7 +51,12 @@
     {% if sb_teams %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for tm in sb_teams %}
-          <li style="margin:6px 0;">{{ tm.name }}</li>
+          <li style="margin:6px 0;">
+            <a href="{% url 'tracker:team-tasks' tm.pk %}">{{ tm.name }}</a>
+            <small style="margin-left:6px; color:#666;">
+              <a href="{% url 'tracker:team-projects' tm.pk %}">Projects</a>
+            </small>
+          </li>
         {% endfor %}
       </ul>
       <div style="margin-top:8px;">

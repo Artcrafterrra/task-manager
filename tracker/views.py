@@ -44,8 +44,36 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = TaskForm
     success_url = reverse_lazy("tracker:task-list")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        project_pk = self.kwargs.get("project_pk")
+        if project_pk:
+            project = get_object_or_404(
+                Project.objects.filter(team__members=self.request.user).distinct(),
+                pk=project_pk,
+            )
+            initial["project"] = project
+        return initial
+
     def form_valid(self, form):
         form.instance.creator = self.request.user
+        project = form.cleaned_data.get("project")
+        # Перевірка наявності проекту
+        if project is None:
+            form.add_error("project", "Please select a project.")
+            return self.form_invalid(form)
+        # Перевірка доступу до обраного проекту
+        if not Project.objects.filter(pk=project.pk, team__members=self.request.user).exists():
+            form.add_error("project", "You don't have access to this project.")
+            return self.form_invalid(form)
+        # Якщо у Task є поле team — встановити його автоматично з проекту
+        if hasattr(form.instance, "team") and form.instance.team_id is None:
+            form.instance.team = project.team
         return super().form_valid(form)
 
 
@@ -113,3 +141,75 @@ class MyTeamListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "teams"
     def get_queryset(self):
         return Team.objects.filter(members=self.request.user).order_by("name")
+
+class TeamProjectListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = Project
+    template_name = "tracker/project_list.html"
+    context_object_name = "projects"
+
+    def test_func(self):
+        team = get_object_or_404(Team, pk=self.kwargs["pk"])
+        return team.members.filter(pk=self.request.user.pk).exists()
+
+    def handle_no_permission(self):
+        # Поведінка за замовчуванням: або редірект на логін, або 403 якщо залогінений
+        return super().handle_no_permission()
+
+    def get_queryset(self):
+        return (
+            Project.objects.filter(team_id=self.kwargs["pk"])
+            .order_by("name")
+            .distinct()
+        )
+
+class TeamTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = Task
+    template_name = "tracker/task_list.html"
+    context_object_name = "tasks"
+    paginate_by = 20
+
+    def test_func(self):
+        team = get_object_or_404(Team, pk=self.kwargs["pk"])
+        return team.members.filter(pk=self.request.user.pk).exists()
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+    def get_queryset(self):
+        return (
+            Task.objects.select_related("task_type", "creator")
+            .prefetch_related("assignees")
+            .filter(project__team_id=self.kwargs["pk"])
+            .order_by("-created_at")
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["team"] = get_object_or_404(Team, pk=self.kwargs["pk"])
+        return ctx
+
+class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = Task
+    template_name = "tracker/task_list.html"
+    context_object_name = "tasks"
+    paginate_by = 20
+
+    def test_func(self):
+        project = get_object_or_404(Project, pk=self.kwargs["pk"])
+        return project.team.members.filter(pk=self.request.user.pk).exists()
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+    def get_queryset(self):
+        return (
+            Task.objects.select_related("task_type", "creator")
+            .prefetch_related("assignees")
+            .filter(project_id=self.kwargs["pk"])
+            .order_by("-created_at")
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["project"] = get_object_or_404(Project, pk=self.kwargs["pk"])
+        return ctx
