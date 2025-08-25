@@ -1,71 +1,87 @@
 {% extends "base.html" %}
-{% load query %}
-{% block title %}Tasks{% endblock %}
+{% block title %}{% if project %}{{ project.name }} — {% endif %}Tasks{% endblock %}
 {% block content %}
-  <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-    <form method="get" class="d-flex gap-2 align-items-center">
-      <input type="text" name="q" class="form-control form-control-sm" placeholder="Search tasks..." value="{{ search_query }}">
-      {% if request.GET.my %}<input type="hidden" name="my" value="{{ request.GET.my }}">{% endif %}
-      {% if request.GET.created %}<input type="hidden" name="created" value="{{ request.GET.created }}">{% endif %}
-      {% if request.GET.done %}<input type="hidden" name="done" value="{{ request.GET.done }}">{% endif %}
-      {% if request.GET.priority %}<input type="hidden" name="priority" value="{{ request.GET.priority }}">{% endif %}
-      <button type="submit" class="btn btn-primary btn-sm">Search</button>
-    </form>
-    <div class="d-flex gap-2">
-      <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:tasktype-list' %}">Task types</a>
-      <a class="btn btn-sm btn-success" href="{% url 'tracker:task-create' %}">+ Create</a>
-    </div>
-  </div>
-
   <div class="card">
     <div class="card-header">
-      <div class="d-flex flex-wrap gap-2 align-items-center">
-        <strong>Tasks</strong>
-        <span class="text-secondary">|</span>
-        <a class="btn btn-sm {% if request.GET.my %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="{% url_with_query request.path my=1 %}">My</a>
-        <a class="btn btn-sm {% if request.GET.done == '0' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="{% url_with_query request.path done='0' %}">Incomplete</a>
-        <a class="btn btn-sm {% if request.GET.done == '1' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="{% url_with_query request.path done='1' %}">Completed</a>
-        <span class="text-secondary">|</span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Priority">
-          <a class="btn {% if request.GET.priority == '1' or request.GET.priority == 'low' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="{% url_with_query request.path priority='1' %}">Low</a>
-          <a class="btn {% if request.GET.priority == '2' or request.GET.priority == 'medium' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="{% url_with_query request.path priority='2' %}">Medium</a>
-          <a class="btn {% if request.GET.priority == '3' or request.GET.priority == 'high' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="{% url_with_query request.path priority='3' %}">High</a>
-          <a class="btn {% if request.GET.priority == '4' or request.GET.priority == 'urgent' %}btn-danger{% else %}btn-outline-secondary{% endif %}"
-             href="{% url_with_query request.path priority='4' %}">Urgent</a>
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+        <div class="me-auto">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <strong>
+              {% if project %}
+                {{ project.name }} — Tasks
+              {% else %}
+                Tasks
+              {% endif %}
+            </strong>
+            <span class="small text-secondary">
+              {% with items=tasks|default:object_list %}
+                Found: {% if page_obj %}{{ page_obj.paginator.count }}{% else %}{{ items|length }}{% endif %}
+              {% endwith %}
+            </span>
+          </div>
+          {% if project and project.team %}
+            <div class="text-secondary">Team: {{ project.team.name }}</div>
+          {% endif %}
         </div>
-        <a class="btn btn-sm btn-outline-secondary ms-auto" href="{% url 'tracker:task-list' %}">Reset</a>
+        <form class="d-flex flex-wrap align-items-center gap-2 ms-lg-3" method="get">
+          <div class="input-group input-group-sm" style="min-width:260px;">
+            <span class="input-group-text"><i class="cil-search"></i></span>
+            <input type="search" name="q" class="form-control" placeholder="Search tasks..."
+                   value="{{ search_query|default:'' }}">
+          </div>
+          <select class="form-select form-select-sm" name="priority" style="max-width:170px;">
+            <option value="">All priorities</option>
+            <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+            <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>High</option>
+            <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
+          </select>
+          <button class="btn btn-sm btn-primary" type="submit">Apply</button>
+          {% if request.GET.q or request.GET.priority %}
+            <a class="btn btn-sm btn-outline-secondary" href="?">Clear</a>
+          {% endif %}
+          {% if project %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-create-in-project' project.pk %}">
+              <i class="cil-plus me-1"></i>Create
+            </a>
+          {% endif %}
+        </form>
       </div>
     </div>
+
     <div class="card-body p-0">
-      {% if object_list %}
+      {% with items=tasks|default:object_list %}
+      {% if items %}
         <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead>
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
               <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Creator</th>
-                <th>Assignees</th>
-                <th>Deadline</th>
-                <th>Status</th>
-                <th class="text-end">Actions</th>
+                <th style="width:34%;">Name</th>
+                <th style="width:14%;">Type</th>
+                <th style="width:14%;">Creator</th>
+                <th style="width:20%;">Assignees</th>
+                <th style="width:10%;">Deadline</th>
+                <th style="width:8%;">Status</th>
               </tr>
             </thead>
             <tbody>
-              {% for task in object_list %}
+              {% for task in items %}
                 <tr class="{% if task.priority == 'urgent' %}table-danger{% elif task.priority == 'high' %}table-warning{% elif task.priority == 'medium' %}table-info{% else %}table-light{% endif %}">
                   <td>
-                    <a class="fw-semibold link-plain" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
+                    <div class="d-flex flex-column">
+                      <a class="fw-semibold link-plain" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
+                      <div class="small text-secondary">
+                        Priority:
+                        <span class="text-uppercase">{{ task.priority|default:"—" }}</span>
+                        {% if task.created_at %}
+                          <span class="ms-2">Created: {{ task.created_at|date:"Y-m-d H:i" }}</span>
+                        {% endif %}
+                      </div>
+                    </div>
                   </td>
                   <td>{{ task.task_type.name|default:"—" }}</td>
                   <td>{{ task.creator }}</td>
-                  <td style="min-width:140px;">
+                  <td style="min-width:160px;">
                     {% for a in task.assignees.all %}
                       <span class="badge text-bg-light me-1">{{ a.username }}</span>
                     {% empty %}
@@ -73,19 +89,17 @@
                     {% endfor %}
                   </td>
                   <td>{{ task.deadline|default:"—" }}</td>
-                  <td>
-                    {% if task.is_completed %}
-                      <span class="badge text-bg-success">Done</span>
-                    {% else %}
-                      <span class="badge text-bg-info">Open</span>
-                    {% endif %}
-                  </td>
-                  <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:task-update' task.pk %}">Edit</a>
-                    <form action="{% url 'tracker:task-toggle' task.pk %}" method="post" style="display:inline;">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-outline-primary">Toggle</button>
-                    </form>
+                  <!-- Status: по центру колонки, напівпрозора іконка -->
+                  <td class="text-center" style="width:60px;">
+                    <a href="{% url 'tracker:task-toggle' task.pk %}"
+                       class="btn btn-sm {% if task.is_completed %}btn-success{% else %}btn-info{% endif %} rounded-circle d-inline-flex align-items-center justify-content-center p-0 mx-auto opacity-75 shadow-none"
+                       style="width:28px;height:28px; transition: opacity .15s ease-in-out;"
+                       onmouseover="this.style.opacity='1'"
+                       onmouseout="this.style.opacity='0.75'"
+                       title="{% if task.is_completed %}Mark as Open{% else %}Mark as Done{% endif %}"
+                       aria-label="{% if task.is_completed %}Mark as Open{% else %}Mark as Done{% endif %}">
+                      <i class="{% if task.is_completed %}cil-check{% else %}cil-circle{% endif %}"></i>
+                    </a>
                   </td>
                 </tr>
               {% endfor %}
@@ -93,8 +107,28 @@
           </table>
         </div>
       {% else %}
-        <div class="p-3 text-secondary">No tasks found.</div>
+        <div class="p-5 text-center">
+          <div class="mb-2">
+            <span class="badge text-bg-light">No tasks found</span>
+          </div>
+          <div class="text-secondary mb-3">Try adjusting your search or filters.</div>
+          {% if request.GET.q or request.GET.priority %}
+            <a class="btn btn-sm btn-outline-secondary" href="?">Clear filters</a>
+          {% endif %}
+          {% if project %}
+            <a class="btn btn-sm btn-primary ms-2" href="{% url 'tracker:task-create-in-project' project.pk %}">
+              <i class="cil-plus me-1"></i>Create task
+            </a>
+          {% endif %}
+        </div>
       {% endif %}
+      {% endwith %}
     </div>
+
+    {% if is_paginated %}
+      <div class="card-footer py-2">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
