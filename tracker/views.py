@@ -213,3 +213,30 @@ class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListV
         ctx = super().get_context_data(**kwargs)
         ctx["project"] = get_object_or_404(Project, pk=self.kwargs["pk"])
         return ctx
+
+class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    model = User
+    template_name = "tracker/user_profile.html"
+    context_object_name = "profile_user"
+
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.pk == int(self.kwargs["pk"])
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        profile_user = self.object
+        ctx["current_tasks"] = (
+            Task.objects.filter(assignees=profile_user, is_completed=False)
+            .select_related("task_type", "creator")
+            .prefetch_related("assignees")
+            .order_by("deadline", "-priority", "-created_at")
+        )
+        return ctx
+
+def my_profile_redirect(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+    return redirect("tracker:user-profile", pk=request.user.pk)
