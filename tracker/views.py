@@ -13,7 +13,7 @@ User = get_user_model()
 
 class TaskListView(LoginRequiredMixin, generic.ListView):
     model = Task
-    paginate_by = 20
+    paginate_by = 2
     template_name = "tracker/task_list.html"
 
     def get_queryset(self):
@@ -71,15 +71,12 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
     def form_valid(self, form):
         form.instance.creator = self.request.user
         project = form.cleaned_data.get("project")
-        # Перевірка наявності проекту
         if project is None:
             form.add_error("project", "Please select a project.")
             return self.form_invalid(form)
-        # Перевірка доступу до обраного проекту
         if not Project.objects.filter(pk=project.pk, team__members=self.request.user).exists():
             form.add_error("project", "You don't have access to this project.")
             return self.form_invalid(form)
-        # Якщо у Task є поле team — встановити його автоматично з проекту
         if hasattr(form.instance, "team") and form.instance.team_id is None:
             form.instance.team = project.team
         return super().form_valid(form)
@@ -140,6 +137,7 @@ class MyProjectListView(LoginRequiredMixin, generic.ListView):
     model = Project
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
+    paginate_by = 20
     def get_queryset(self):
         return Project.objects.filter(team__members=self.request.user).order_by("name").distinct()
 
@@ -147,6 +145,7 @@ class MyTeamListView(LoginRequiredMixin, generic.ListView):
     model = Team
     template_name = "tracker/team_list.html"
     context_object_name = "teams"
+    paginate_by = 20
     def get_queryset(self):
         return Team.objects.filter(members=self.request.user).order_by("name")
 
@@ -154,13 +153,13 @@ class TeamProjectListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListV
     model = Project
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
+    paginate_by = 20
 
     def test_func(self):
         team = get_object_or_404(Team, pk=self.kwargs["pk"])
         return team.members.filter(pk=self.request.user.pk).exists()
 
     def handle_no_permission(self):
-        # Поведінка за замовчуванням: або редірект на логін, або 403 якщо залогінений
         return super().handle_no_permission()
 
     def get_queryset(self):

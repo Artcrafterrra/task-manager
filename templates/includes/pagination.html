@@ -1,0 +1,13 @@
+{% if is_paginated %}
+  <nav style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+    {% with qs=request.GET.urlencode %}
+      {% if page_obj.has_previous %}
+        <a href="{% if qs %}?{{ qs }}&{% else %}?{% endif %}page={{ page_obj.previous_page_number }}">← Prev</a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="{% if qs %}?{{ qs }}&{% else %}?{% endif %}page={{ page_obj.next_page_number }}">Next →</a>
+      {% endif %}
+    {% endwith %}
+  </nav>
+{% endif %}
