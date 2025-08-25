@@ -22,14 +22,22 @@ class WorkerAdmin(UserAdmin):
     list_filter = ("position", "is_staff", "is_active")
     search_fields = ("username", "first_name", "last_name", "email")
 
+    inlines = []
+    readonly_fields = ("projects_list",)
 
-@admin.register(Task)
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "task_type", "priority", "is_completed", "deadline", "creator")
-    list_filter = ("task_type", "priority", "is_completed", "deadline")
-    search_fields = ("name", "description")
-    autocomplete_fields = ("task_type", "assignees", "creator")
-    filter_horizontal = ("assignees",)
+    def projects_list(self, obj):
+        projects = Project.objects.filter(team__members=obj).order_by("name").distinct()
+        return ", ".join(p.name for p in projects) or "—"
+
+    projects_list.short_description = "Projects"
+
+class TeamMembershipInline(admin.TabularInline):
+    model = Team.members.through
+    extra = 0
+    verbose_name = "Team membership"
+    verbose_name_plural = "Teams"
+
+WorkerAdmin.inlines = [TeamMembershipInline]
 
 
 @admin.register(Team)

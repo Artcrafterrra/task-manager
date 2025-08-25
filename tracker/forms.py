@@ -69,3 +69,27 @@ class SignUpForm(UserCreationForm):
         if email and User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("User with such email already exists.")
         return email
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=False)
+    position = forms.ModelChoiceField(queryset=Position.objects.all(), required=True)
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+            "position",
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and User.objects.filter(email__iexact=email).exists():
+            from django.core.exceptions import ValidationError
+            raise ValidationError("User with such email already exists.")
+        return email

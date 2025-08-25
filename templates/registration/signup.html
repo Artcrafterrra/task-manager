@@ -22,6 +22,10 @@
       {{ form.email.errors }}
     </p>
     <p>
+      {{ form.position.label_tag }} {{ form.position }}
+      {{ form.position.errors }}
+    </p>
+    <p>
       {{ form.password1.label_tag }} {{ form.password1 }}
       {{ form.password1.errors }}
     </p>
@@ -32,4 +36,12 @@
     <button type="submit">Sign up</button>
   </form>
   <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+  <hr>
+  {% load socialaccount %}
+  <p>Або продовжити через:</p>
+  <p>
+    <a href="{% provider_login_url 'google' %}" style="display:inline-block;padding:8px 12px;background:#fff;border:1px solid #ddd;border-radius:4px;text-decoration:none;">
+      Увійти з Google
+    </a>
+  </p>
 {% endblock %}
