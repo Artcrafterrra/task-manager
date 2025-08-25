@@ -1,10 +1,32 @@
 {% extends "base.html" %}
+{% load socialaccount %}
 {% block title %}Login{% endblock %}
 {% block content %}
+  <!-- ... existing code ... -->
   <h1>Login</h1>
-  <form method="post">
+
+  <form method="post" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
+    <!-- ... existing code for username/password fields ... -->
+    <p>
+      {{ form.username.label_tag }} {{ form.username }}
+      {{ form.username.errors }}
+    </p>
+    <p>
+      {{ form.password.label_tag }} {{ form.password }}
+      {{ form.password.errors }}
+    </p>
     <button type="submit">Login</button>
   </form>
+
+  <hr>
+
+  <p>Або продовжити через:</p>
+  <p>
+    <a href="{% provider_login_url 'google' %}" style="display:inline-block;padding:8px 12px;background:#fff;border:1px solid #ddd;border-radius:4px;text-decoration:none;">
+      Увійти з Google
+    </a>
+  </p>
+  <!-- ... existing code ... -->
 {% endblock %}
