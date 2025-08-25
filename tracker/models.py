@@ -25,7 +25,11 @@ class TaskType(models.Model):
 
 class Worker(AbstractUser):
     position = models.ForeignKey(
-        Position, on_delete=models.PROTECT, related_name="workers", null=True, blank=True
+        Position,
+        on_delete=models.PROTECT,
+        related_name="workers",
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -45,9 +49,12 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+
 class Team(models.Model):
     name = models.CharField(max_length=80, unique=True)
-    members = models.ManyToManyField("Worker", related_name="teams", blank=True)
+    members = models.ManyToManyField(
+        "Worker", related_name="teams", blank=True
+    )
 
     class Meta:
         ordering = ["name"]
@@ -58,7 +65,9 @@ class Team(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=120, unique=True)
-    team = models.ForeignKey(Team, on_delete=models.PROTECT, related_name="projects")
+    team = models.ForeignKey(
+        Team, on_delete=models.PROTECT, related_name="projects"
+    )
     description = models.TextField(blank=True)
 
     class Meta:
@@ -80,7 +89,10 @@ class Task(models.Model):
     deadline = models.DateField(null=True, blank=True)
     is_completed = models.BooleanField(default=False, db_index=True)
     priority = models.CharField(
-        max_length=10, choices=Priority.choices, default=Priority.MEDIUM, db_index=True
+        max_length=10,
+        choices=Priority.choices,
+        default=Priority.MEDIUM,
+        db_index=True,
     )
 
     task_type = models.ForeignKey(
@@ -98,7 +110,13 @@ class Task(models.Model):
 
     tags = models.ManyToManyField("Tag", related_name="tasks", blank=True)
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="tasks", null=True, blank=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="tasks",
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -109,7 +127,8 @@ class Task(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="deadline_not_before_created",
-                check=models.Q(deadline__isnull=True) | models.Q(deadline__gte=models.F("created_at")),
+                check=models.Q(deadline__isnull=True)
+                | models.Q(deadline__gte=models.F("created_at")),
             ),
         ]
 

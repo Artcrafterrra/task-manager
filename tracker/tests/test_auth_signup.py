@@ -16,7 +16,9 @@ class TestSignUp(TestCase):
         try:
             url = reverse("signup")
         except NoReverseMatch:
-            self.skipTest("SignUpView URL name 'signup' is not configured in project urls.")
+            self.skipTest(
+                "SignUpView URL name 'signup' is not configured in project urls."
+            )
         resp = self.client.get(url)
         if resp.status_code == 404:
             self.skipTest("SignUpView URL exists but returns 404 in GET.")
@@ -40,6 +42,8 @@ class TestSignUp(TestCase):
         try:
             url = reverse("signup")
         except NoReverseMatch:
-            self.skipTest("SignUpView URL name 'signup' is not configured in project urls.")
+            self.skipTest(
+                "SignUpView URL name 'signup' is not configured in project urls."
+            )
         resp = self.client.get(url)
         self.assertIn(resp.status_code, (302, 403))

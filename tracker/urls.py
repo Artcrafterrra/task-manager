@@ -22,16 +22,34 @@ urlpatterns = [
     path("", TaskListView.as_view(), name="task-list"),
     path("tasks/create/", TaskCreateView.as_view(), name="task-create"),
     path("tasks/<int:pk>/", TaskDetailView.as_view(), name="task-detail"),
-    path("tasks/<int:pk>/update/", TaskUpdateView.as_view(), name="task-update"),
+    path(
+        "tasks/<int:pk>/update/", TaskUpdateView.as_view(), name="task-update"
+    ),
     path("tasks/<int:pk>/toggle/", task_toggle_complete, name="task-toggle"),
     path("types/", TaskTypeListView.as_view(), name="tasktype-list"),
-    path("types/create/", TaskTypeCreateView.as_view(), name="tasktype-create"),
+    path(
+        "types/create/", TaskTypeCreateView.as_view(), name="tasktype-create"
+    ),
     path("projects/", MyProjectListView.as_view(), name="project-list"),
-    path("projects/<int:pk>/tasks/", ProjectTaskListView.as_view(), name="project-tasks"),
-    path("projects/<int:project_pk>/tasks/create/", TaskCreateView.as_view(), name="task-create-in-project"),
+    path(
+        "projects/<int:pk>/tasks/",
+        ProjectTaskListView.as_view(),
+        name="project-tasks",
+    ),
+    path(
+        "projects/<int:project_pk>/tasks/create/",
+        TaskCreateView.as_view(),
+        name="task-create-in-project",
+    ),
     path("teams/", MyTeamListView.as_view(), name="team-list"),
-    path("teams/<int:pk>/projects/", TeamProjectListView.as_view(), name="team-projects"),
-    path("teams/<int:pk>/tasks/", TeamTaskListView.as_view(), name="team-tasks"),
+    path(
+        "teams/<int:pk>/projects/",
+        TeamProjectListView.as_view(),
+        name="team-projects",
+    ),
+    path(
+        "teams/<int:pk>/tasks/", TeamTaskListView.as_view(), name="team-tasks"
+    ),
     # User profile
     path("users/<int:pk>/", UserProfileView.as_view(), name="user-profile"),
     path("me/", my_profile_redirect, name="my-profile"),

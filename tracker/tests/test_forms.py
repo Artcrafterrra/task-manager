@@ -11,10 +11,16 @@ class TestTaskForm(TestCase):
     def setUp(self):
         self.position = Position.objects.create(name="QA")
         self.active_user = User.objects.create_user(
-            username="active_user", password="pass12345", is_active=True, position=self.position
+            username="active_user",
+            password="pass12345",
+            is_active=True,
+            position=self.position,
         )
         self.inactive_user = User.objects.create_user(
-            username="inactive_user", password="pass12345", is_active=False, position=self.position
+            username="inactive_user",
+            password="pass12345",
+            is_active=False,
+            position=self.position,
         )
         self.superuser = User.objects.create_superuser(
             username="admin", password="pass12345", email="admin@example.com"
@@ -27,7 +33,15 @@ class TestTaskForm(TestCase):
         self.assertIn(self.active_user, qs)
         self.assertNotIn(self.inactive_user, qs)
         self.assertNotIn(self.superuser, qs)
-        for field in ["name", "description", "deadline", "priority", "task_type", "assignees", "is_completed"]:
+        for field in [
+            "name",
+            "description",
+            "deadline",
+            "priority",
+            "task_type",
+            "assignees",
+            "is_completed",
+        ]:
             self.assertIn(field, form.fields)
 
     def test_valid_form_minimal(self):
@@ -58,7 +72,9 @@ class TestSignUpForm(TestCase):
         self.position = Position.objects.create(name="PM")
 
     def test_signup_form_fields_and_email_uniqueness(self):
-        user = User.objects.create_user(username="john", email="user@example.com", password="pass12345")
+        user = User.objects.create_user(
+            username="john", email="user@example.com", password="pass12345"
+        )
         form = SignUpForm(
             data={
                 "username": "jane",
@@ -71,7 +87,9 @@ class TestSignUpForm(TestCase):
             }
         )
         self.assertFalse(form.is_valid())
-        self.assertIn("User with such email already exists.", form.errors["email"])
+        self.assertIn(
+            "User with such email already exists.", form.errors["email"]
+        )
 
     def test_signup_form_valid(self):
         form = SignUpForm(

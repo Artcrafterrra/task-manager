@@ -9,7 +9,11 @@ from tracker.views import SignUpView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("tracker.urls", namespace="tracker")),
-    path("accounts/login/", views.LoginView.as_view(template_name="registration/login.html"), name="login"),
+    path(
+        "accounts/login/",
+        views.LoginView.as_view(template_name="registration/login.html"),
+        name="login",
+    ),
     path("accounts/logout/", views.LogoutView.as_view(), name="logout"),
     path("accounts/signup/", SignUpView.as_view(), name="signup"),
     path("accounts/", include("allauth.urls")),

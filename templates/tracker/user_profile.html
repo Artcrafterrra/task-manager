@@ -1,34 +1,66 @@
 {% extends "base.html" %}
 {% block title %}User Profile{% endblock %}
 {% block content %}
-  <h1>User profile</h1>
+  <div class="row g-3">
+    <div class="col-12 col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <strong>User Profile</strong>
+        </div>
+        <div class="card-body">
+          <div class="mb-2">
+            <div class="h5 mb-0">{{ profile_user.get_full_name|default:profile_user.username }}</div>
+            <div class="text-secondary">{{ profile_user.username }}</div>
+          </div>
+          {% if profile_user.email %}
+            <div class="mb-1">
+              <span class="text-secondary">Email:</span>
+              <span>{{ profile_user.email }}</span>
+            </div>
+          {% endif %}
+          {% if profile_user.position %}
+            <div class="mb-1">
+              <span class="text-secondary">Position:</span>
+              <span>{{ profile_user.position.name }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-  <section style="margin-bottom:16px;">
-    <div><strong>Name:</strong> {{ profile_user.get_full_name|default:profile_user.username }}</div>
-    <div><strong>Username:</strong> {{ profile_user.username }}</div>
-    {% if profile_user.email %}
-      <div><strong>Email:</strong> {{ profile_user.email }}</div>
-    {% endif %}
-    {% if profile_user.position %}
-      <div><strong>Position:</strong> {{ profile_user.position.name }}</div>
-    {% endif %}
-  </section>
-
-  <section>
-    <h2>Current tasks</h2>
-    {% if current_tasks %}
-      <ul>
-        {% for t in current_tasks %}
-          <li>
-            <a href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
-            {% if t.task_type %}<small>({{ t.task_type.name }})</small>{% endif %}
-            {% if t.deadline %}<small> — due {{ t.deadline }}</small>{% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-      <p><a href="{% url 'tracker:task-list' %}?my=1&done=0">Show all my open tasks</a></p>
-    {% else %}
-      <p>No open tasks.</p>
-    {% endif %}
-  </section>
+    <div class="col-12 col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>Current tasks</strong>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-list' %}?my=1&done=0">Show all</a>
+        </div>
+        <div class="card-body p-0">
+          {% if current_tasks %}
+            <ul class="list-group list-group-flush">
+              {% for t in current_tasks %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="me-3">
+                    <a class="fw-semibold" href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
+                    {% if t.task_type %}
+                      <small class="text-secondary ms-2">({{ t.task_type.name }})</small>
+                    {% endif %}
+                    {% if t.deadline %}
+                      <small class="text-secondary ms-2">due {{ t.deadline }}</small>
+                    {% endif %}
+                  </div>
+                  {% if t.is_completed %}
+                    <span class="badge text-bg-success">Done</span>
+                  {% else %}
+                    <span class="badge text-bg-warning">Open</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="p-3 text-secondary">No open tasks.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

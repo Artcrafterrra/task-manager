@@ -11,10 +11,86 @@ from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
 User = get_user_model()
 
 
-class TaskListView(LoginRequiredMixin, generic.ListView):
+class TeamMemberRequiredMixin(UserPassesTestMixin):
+    team_pk_kwarg = "pk"
+
+    def get_team(self):
+        return get_object_or_404(Team, pk=self.kwargs[self.team_pk_kwarg])
+
+    def test_func(self):
+        team = self.get_team()
+        return team.members.filter(pk=self.request.user.pk).exists()
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+
+class ProjectMemberRequiredMixin(UserPassesTestMixin):
+    project_pk_kwarg = "pk"
+
+    def get_project(self):
+        return get_object_or_404(
+            Project, pk=self.kwargs[self.project_pk_kwarg]
+        )
+
+    def test_func(self):
+        project = self.get_project()
+        return project.team.members.filter(pk=self.request.user.pk).exists()
+
+    def handle_no_permission(self):
+        return super().handle_no_permission()
+
+
+class TaskFiltersMixin:
+    allowed_filters = set()
+
+    def apply_task_filters(self, qs):
+        if "q" in self.allowed_filters:
+            if q := self.request.GET.get("q"):
+                qs = qs.filter(
+                    Q(name__icontains=q) | Q(description__icontains=q)
+                )
+
+        if "priority" in self.allowed_filters:
+            pr = self.request.GET.get("priority")
+            if pr:
+                val = None
+                if str(pr).isdigit():
+                    val = int(pr)
+                else:
+                    mapping = {
+                        "low": getattr(Task.Priority, "LOW", 1),
+                        "medium": getattr(Task.Priority, "MEDIUM", 2),
+                        "high": getattr(Task.Priority, "HIGH", 3),
+                        "urgent": getattr(Task.Priority, "URGENT", 4),
+                    }
+                    val = mapping.get(str(pr).lower())
+                if val is not None:
+                    qs = qs.filter(priority=val)
+
+        if "my" in self.allowed_filters and self.request.GET.get("my"):
+            qs = qs.filter(assignees=self.request.user)
+
+        if "created" in self.allowed_filters and self.request.GET.get(
+            "created"
+        ):
+            qs = qs.filter(creator=self.request.user)
+
+        if "done" in self.allowed_filters:
+            done = self.request.GET.get("done")
+            if done == "1":
+                qs = qs.filter(is_completed=True)
+            elif done == "0":
+                qs = qs.filter(is_completed=False)
+
+        return qs
+
+
+class TaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
     model = Task
-    paginate_by = 2
+    paginate_by = 20
     template_name = "tracker/task_list.html"
+    allowed_filters = {"q", "priority", "my", "created", "done"}
 
     def get_queryset(self):
         qs = (
@@ -22,19 +98,7 @@ class TaskListView(LoginRequiredMixin, generic.ListView):
             .prefetch_related("assignees")
             .order_by("-created_at")
         )
-        if self.request.GET.get("my"):
-            qs = qs.filter(assignees=self.request.user)
-        if self.request.GET.get("created"):
-            qs = qs.filter(creator=self.request.user)
-        if self.request.GET.get("done") == "1":
-            qs = qs.filter(is_completed=True)
-        if self.request.GET.get("done") == "0":
-            qs = qs.filter(is_completed=False)
-        if pr := self.request.GET.get("priority"):
-            qs = qs.filter(priority=pr)
-        if q := self.request.GET.get("q"):
-            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
-        return qs
+        return self.apply_task_filters(qs).distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -62,7 +126,9 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
         project_pk = self.kwargs.get("project_pk")
         if project_pk:
             project = get_object_or_404(
-                Project.objects.filter(team__members=self.request.user).distinct(),
+                Project.objects.filter(
+                    team__members=self.request.user
+                ).distinct(),
                 pk=project_pk,
             )
             initial["project"] = project
@@ -74,8 +140,12 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
         if project is None:
             form.add_error("project", "Please select a project.")
             return self.form_invalid(form)
-        if not Project.objects.filter(pk=project.pk, team__members=self.request.user).exists():
-            form.add_error("project", "You don't have access to this project.")
+        if not Project.objects.filter(
+            pk=project.pk, team__members=self.request.user
+        ).exists():
+            form.add_error(
+                "project", "You don't have access to this project."
+            )
             return self.form_invalid(form)
         if hasattr(form.instance, "team") and form.instance.team_id is None:
             form.instance.team = project.team
@@ -90,9 +160,20 @@ class TaskUpdateView(LoginRequiredMixin, generic.UpdateView):
 
 def task_toggle_complete(request, pk: int):
     task = get_object_or_404(Task, pk=pk)
+    if (
+        not task.project
+        or not task.project.team.members.filter(pk=request.user.pk).exists()
+    ):
+        return redirect(
+            request.META.get(
+                "HTTP_REFERER", reverse_lazy("tracker:task-list")
+            )
+        )
     task.is_completed = not task.is_completed
     task.save(update_fields=["is_completed"])
-    return redirect(request.META.get("HTTP_REFERER", reverse_lazy("tracker:task-list")))
+    return redirect(
+        request.META.get("HTTP_REFERER", reverse_lazy("tracker:task-list"))
+    )
 
 
 class TaskTypeListView(LoginRequiredMixin, generic.ListView):
@@ -101,6 +182,7 @@ class TaskTypeListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "types"
     paginate_by = 20
     ordering = ["name"]
+
 
 class TaskTypeCreateView(LoginRequiredMixin, generic.CreateView):
     model = TaskType
@@ -127,6 +209,7 @@ class SignUpView(UserPassesTestMixin, generic.CreateView):
 
     def get_success_url(self):
         from django.conf import settings
+
         return getattr(settings, "LOGIN_REDIRECT_URL", str(self.success_url))
 
     def get_object(self, queryset=None):
@@ -138,29 +221,32 @@ class MyProjectListView(LoginRequiredMixin, generic.ListView):
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
     paginate_by = 20
+
     def get_queryset(self):
-        return Project.objects.filter(team__members=self.request.user).order_by("name").distinct()
+        return (
+            Project.objects.filter(team__members=self.request.user)
+            .order_by("name")
+            .distinct()
+        )
+
 
 class MyTeamListView(LoginRequiredMixin, generic.ListView):
     model = Team
     template_name = "tracker/team_list.html"
     context_object_name = "teams"
     paginate_by = 20
+
     def get_queryset(self):
         return Team.objects.filter(members=self.request.user).order_by("name")
 
-class TeamProjectListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+
+class TeamProjectListView(
+    LoginRequiredMixin, TeamMemberRequiredMixin, generic.ListView
+):
     model = Project
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
     paginate_by = 20
-
-    def test_func(self):
-        team = get_object_or_404(Team, pk=self.kwargs["pk"])
-        return team.members.filter(pk=self.request.user.pk).exists()
-
-    def handle_no_permission(self):
-        return super().handle_no_permission()
 
     def get_queryset(self):
         return (
@@ -169,59 +255,54 @@ class TeamProjectListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListV
             .distinct()
         )
 
-class TeamTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+
+class TeamTaskListView(
+    LoginRequiredMixin,
+    TeamMemberRequiredMixin,
+    TaskFiltersMixin,
+    generic.ListView,
+):
     model = Task
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
     paginate_by = 20
-
-    def test_func(self):
-        team = get_object_or_404(Team, pk=self.kwargs["pk"])
-        return team.members.filter(pk=self.request.user.pk).exists()
-
-    def handle_no_permission(self):
-        return super().handle_no_permission()
+    allowed_filters = {"q", "priority"}
 
     def get_queryset(self):
-        return (
+        qs = (
             Task.objects.select_related("task_type", "creator")
             .prefetch_related("assignees")
             .filter(project__team_id=self.kwargs["pk"])
             .order_by("-created_at")
         )
-        if q := self.request.GET.get("q"):
-            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
-        return qs
+        return self.apply_task_filters(qs).distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["team"] = get_object_or_404(Team, pk=self.kwargs["pk"])
         ctx["search_query"] = self.request.GET.get("q", "")
         return ctx
 
-class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+
+class ProjectTaskListView(
+    LoginRequiredMixin,
+    ProjectMemberRequiredMixin,
+    TaskFiltersMixin,
+    generic.ListView,
+):
     model = Task
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
     paginate_by = 20
-
-    def test_func(self):
-        project = get_object_or_404(Project, pk=self.kwargs["pk"])
-        return project.team.members.filter(pk=self.request.user.pk).exists()
-
-    def handle_no_permission(self):
-        return super().handle_no_permission()
+    allowed_filters = {"q", "priority"}
 
     def get_queryset(self):
-        return (
+        qs = (
             Task.objects.select_related("task_type", "creator")
             .prefetch_related("assignees")
             .filter(project_id=self.kwargs["pk"])
             .order_by("-created_at")
         )
-        if q := self.request.GET.get("q"):
-            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
-        return qs
+        return self.apply_task_filters(qs).distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -229,13 +310,18 @@ class ProjectTaskListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListV
         ctx["search_query"] = self.request.GET.get("q", "")
         return ctx
 
-class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+
+class UserProfileView(
+    LoginRequiredMixin, UserPassesTestMixin, generic.DetailView
+):
     model = User
     template_name = "tracker/user_profile.html"
     context_object_name = "profile_user"
 
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.pk == int(self.kwargs["pk"])
+        return self.request.user.is_staff or self.request.user.pk == int(
+            self.kwargs["pk"]
+        )
 
     def handle_no_permission(self):
         return super().handle_no_permission()
@@ -250,6 +336,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailVie
             .order_by("deadline", "-priority", "-created_at")
         )
         return ctx
+
 
 def my_profile_redirect(request):
     if not request.user.is_authenticated:

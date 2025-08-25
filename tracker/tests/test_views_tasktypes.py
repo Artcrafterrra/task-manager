@@ -10,7 +10,9 @@ User = get_user_model()
 class TestTaskTypeViews(TestCase):
     def setUp(self):
         self.pos = Position.objects.create(name="Support")
-        self.user = User.objects.create_user(username="user", password="pass12345", position=self.pos)
+        self.user = User.objects.create_user(
+            username="user", password="pass12345", position=self.pos
+        )
         TaskType.objects.create(name="Bug")
         TaskType.objects.create(name="Feature")
         TaskType.objects.create(name="Ops")
@@ -45,4 +47,3 @@ class TestTaskTypeViews(TestCase):
         self.assertTrue(form.is_bound)
         self.assertIn("name", form.errors)
         self.assertIn("Such task type already exists.", form.errors["name"])
-

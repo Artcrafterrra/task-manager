@@ -17,7 +17,9 @@ class TaskTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Worker)
 class WorkerAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (("Company info", {"fields": ("position",)}),)
+    fieldsets = UserAdmin.fieldsets + (
+        ("Company info", {"fields": ("position",)}),
+    )
     list_display = ("username", "email", "position", "is_staff", "is_active")
     list_filter = ("position", "is_staff", "is_active")
     search_fields = ("username", "first_name", "last_name", "email")
@@ -26,16 +28,22 @@ class WorkerAdmin(UserAdmin):
     readonly_fields = ("projects_list",)
 
     def projects_list(self, obj):
-        projects = Project.objects.filter(team__members=obj).order_by("name").distinct()
+        projects = (
+            Project.objects.filter(team__members=obj)
+            .order_by("name")
+            .distinct()
+        )
         return ", ".join(p.name for p in projects) or "—"
 
     projects_list.short_description = "Projects"
+
 
 class TeamMembershipInline(admin.TabularInline):
     model = Team.members.through
     extra = 0
     verbose_name = "Team membership"
     verbose_name_plural = "Teams"
+
 
 WorkerAdmin.inlines = [TeamMembershipInline]
 
