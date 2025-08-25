@@ -87,7 +87,7 @@ class TaskFiltersMixin:
 
 class TaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
     model = Task
-    paginate_by = 20
+    paginate_by = 10
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
     allowed_filters = {"q", "priority", "my", "created", "done"}
@@ -180,7 +180,7 @@ class TaskTypeListView(LoginRequiredMixin, generic.ListView):
     model = TaskType
     template_name = "tracker/tasktype_list.html"
     context_object_name = "types"
-    paginate_by = 20
+    paginate_by = 10
     ordering = ["name"]
 
 
@@ -220,7 +220,7 @@ class MyProjectListView(LoginRequiredMixin, generic.ListView):
     model = Project
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
-    paginate_by = 20
+    paginate_by = 10
 
     def get_queryset(self):
         return (
@@ -234,7 +234,7 @@ class MyTeamListView(LoginRequiredMixin, generic.ListView):
     model = Team
     template_name = "tracker/team_list.html"
     context_object_name = "teams"
-    paginate_by = 20
+    paginate_by = 10
 
     def get_queryset(self):
         return Team.objects.filter(members=self.request.user).order_by("name")
@@ -246,7 +246,7 @@ class TeamProjectListView(
     model = Project
     template_name = "tracker/project_list.html"
     context_object_name = "projects"
-    paginate_by = 20
+    paginate_by = 10
 
     def get_queryset(self):
         return (
@@ -265,7 +265,7 @@ class TeamTaskListView(
     model = Task
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
-    paginate_by = 20
+    paginate_by = 10
     allowed_filters = {"q", "priority"}
 
     def get_queryset(self):
@@ -292,7 +292,7 @@ class ProjectTaskListView(
     model = Task
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
-    paginate_by = 20
+    paginate_by = 10
     allowed_filters = {"q", "priority"}
 
     def get_queryset(self):
@@ -346,7 +346,7 @@ def my_profile_redirect(request):
 
 class BaseTaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
     model = Task
-    paginate_by = 20
+    paginate_by = 10
     template_name = "tracker/task_list.html"
 
     def base_qs(self):

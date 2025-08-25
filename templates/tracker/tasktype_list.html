@@ -1,13 +1,58 @@
 {% extends "base.html" %}
 {% block title %}Task Types{% endblock %}
 {% block content %}
-  <h1>Task Types</h1>
-  <p><a href="{% url 'tracker:tasktype-create' %}">+ Add Type</a></p>
-  <ul>
-    {% for t in types %}
-      <li>{{ t.name }}</li>
-    {% empty %}
-      <li>No types yet.</li>
-    {% endfor %}
-  </ul>
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+        <div class="me-auto">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <strong>Task Types</strong>
+            <span class="small text-secondary">
+              {% if page_obj %}Found: {{ page_obj.paginator.count }}{% else %}Found: {{ types|length }}{% endif %}
+            </span>
+          </div>
+        </div>
+        <div>
+          <a class="btn btn-sm btn-primary" href="{% url 'tracker:tasktype-create' %}">
+            <i class="cil-plus me-1"></i>Add Type
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      {% if types %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:70%;">Name</th>
+                <th style="width:30%;" class="text-end">Tasks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in types %}
+                <tr>
+                  <td class="fw-semibold">{{ t.name }}</td>
+                  <td class="text-end">
+                    <span class="badge text-bg-light">{{ t.tasks.count }} tasks</span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-5 text-center">
+          <div class="mb-2">
+            <span class="badge text-bg-light">No types yet</span>
+          </div>
+          <div class="text-secondary mb-3">Create your first task type to better categorize tasks.</div>
+          <a class="btn btn-sm btn-primary" href="{% url 'tracker:tasktype-create' %}">
+            <i class="cil-plus me-1"></i>Add Type
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

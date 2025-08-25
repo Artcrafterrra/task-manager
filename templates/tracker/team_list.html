@@ -1,12 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Мої тімси{% endblock %}
+{% block title %}My teams{% endblock %}
 {% block content %}
-  <h1>My teams</h1>
-  <ul>
-    {% for t in teams %}
-      <li>{{ t.name }}</li>
-    {% empty %}
-      <li>No teams</li>
-    {% endfor %}
-  </ul>
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+        <div class="me-auto">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <strong>My teams</strong>
+            <span class="small text-secondary">
+              {% if page_obj %}Found: {{ page_obj.paginator.count }}{% else %}Found: {{ teams|length }}{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      {% if teams %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:45%;">Name</th>
+                <th style="width:35%;">Members</th>
+                <th style="width:20%;" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in teams %}
+                <tr>
+                  <td class="fw-semibold">{{ t.name }}</td>
+                  <td>
+                    <span class="badge text-bg-light">{{ t.members.count }} members</span>
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary me-1" href="{% url 'tracker:team-projects' t.pk %}">
+                      <i class="cil-layers me-1"></i>Projects
+                    </a>
+                    <a class="btn btn-sm btn-primary" href="{% url 'tracker:team-tasks' t.pk %}">
+                      <i class="cil-list me-1"></i>Tasks
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-5 text-center">
+          <div class="mb-2">
+            <span class="badge text-bg-light">No teams</span>
+          </div>
+          <div class="text-secondary">You are not a member of any team yet.</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
