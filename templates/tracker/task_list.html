@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load query %}
 {% block title %}Tasks{% endblock %}
 {% block content %}
   <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
@@ -22,21 +23,21 @@
         <strong>Tasks</strong>
         <span class="text-secondary">|</span>
         <a class="btn btn-sm {% if request.GET.my %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="?my=1{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.done %}&done={{ request.GET.done }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">My</a>
+           href="{% url_with_query request.path my=1 %}">My</a>
         <a class="btn btn-sm {% if request.GET.done == '0' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="?done=0{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Incomplete</a>
+           href="{% url_with_query request.path done='0' %}">Incomplete</a>
         <a class="btn btn-sm {% if request.GET.done == '1' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-           href="?done=1{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Completed</a>
+           href="{% url_with_query request.path done='1' %}">Completed</a>
         <span class="text-secondary">|</span>
         <div class="btn-group btn-group-sm" role="group" aria-label="Priority">
-          <a class="btn {% if request.GET.priority in '1 low' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="?priority=1{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.done %}&done={{ request.GET.done }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Low</a>
-          <a class="btn {% if request.GET.priority in '2 medium' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="?priority=2{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.done %}&done={{ request.GET.done }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Medium</a>
-          <a class="btn {% if request.GET.priority in '3 high' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
-             href="?priority=3{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.done %}&done={{ request.GET.done }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">High</a>
-          <a class="btn {% if request.GET.priority in '4 urgent' %}btn-danger{% else %}btn-outline-secondary{% endif %}"
-             href="?priority=4{% if request.GET.my %}&my={{ request.GET.my }}{% endif %}{% if request.GET.created %}&created={{ request.GET.created }}{% endif %}{% if request.GET.done %}&done={{ request.GET.done }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">Urgent</a>
+          <a class="btn {% if request.GET.priority == '1' or request.GET.priority == 'low' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+             href="{% url_with_query request.path priority='1' %}">Low</a>
+          <a class="btn {% if request.GET.priority == '2' or request.GET.priority == 'medium' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+             href="{% url_with_query request.path priority='2' %}">Medium</a>
+          <a class="btn {% if request.GET.priority == '3' or request.GET.priority == 'high' %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+             href="{% url_with_query request.path priority='3' %}">High</a>
+          <a class="btn {% if request.GET.priority == '4' or request.GET.priority == 'urgent' %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+             href="{% url_with_query request.path priority='4' %}">Urgent</a>
         </div>
         <a class="btn btn-sm btn-outline-secondary ms-auto" href="{% url 'tracker:task-list' %}">Reset</a>
       </div>
@@ -52,38 +53,26 @@
                 <th>Creator</th>
                 <th>Assignees</th>
                 <th>Deadline</th>
-                <th>Priority</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for task in object_list %}
-                <tr>
+                <tr class="{% if task.priority == 'urgent' %}table-danger{% elif task.priority == 'high' %}table-warning{% elif task.priority == 'medium' %}table-info{% else %}table-light{% endif %}">
                   <td>
-                    <a class="fw-semibold" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
+                    <a class="fw-semibold link-plain" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
                   </td>
                   <td>{{ task.task_type.name|default:"—" }}</td>
                   <td>{{ task.creator }}</td>
                   <td style="min-width:140px;">
                     {% for a in task.assignees.all %}
-                      <span class="badge text-bg-secondary me-1">{{ a.username }}</span>
+                      <span class="badge text-bg-light me-1">{{ a.username }}</span>
                     {% empty %}
                       <span class="text-secondary">—</span>
                     {% endfor %}
                   </td>
                   <td>{{ task.deadline|default:"—" }}</td>
-                  <td>
-                    {% if task.priority == 4 %}
-                      <span class="badge text-bg-danger">Urgent</span>
-                    {% elif task.priority == 3 %}
-                      <span class="badge text-bg-danger">High</span>
-                    {% elif task.priority == 2 %}
-                      <span class="badge text-bg-warning">Medium</span>
-                    {% else %}
-                      <span class="badge text-bg-secondary">Low</span>
-                    {% endif %}
-                  </td>
                   <td>
                     {% if task.is_completed %}
                       <span class="badge text-bg-success">Done</span>
@@ -93,9 +82,10 @@
                   </td>
                   <td class="text-end">
                     <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:task-update' task.pk %}">Edit</a>
-                    <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-toggle' task.pk %}">
-                      Toggle
-                    </a>
+                    <form action="{% url 'tracker:task-toggle' task.pk %}" method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-primary">Toggle</button>
+                    </form>
                   </td>
                 </tr>
               {% endfor %}

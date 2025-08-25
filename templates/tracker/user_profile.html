@@ -1,63 +1,74 @@
 {% extends "base.html" %}
-{% block title %}User Profile{% endblock %}
+{% block title %}User profile{% endblock %}
 {% block content %}
   <div class="row g-3">
-    <div class="col-12 col-lg-4">
+    <div class="col-lg-4">
+      <!-- Лівий блок з інформацією про користувача: висота за вмістом, без HTMX -->
       <div class="card">
         <div class="card-header">
-          <strong>User Profile</strong>
+          <strong>User info</strong>
         </div>
         <div class="card-body">
-          <div class="mb-2">
-            <div class="h5 mb-0">{{ profile_user.get_full_name|default:profile_user.username }}</div>
-            <div class="text-secondary">{{ profile_user.username }}</div>
-          </div>
+          <div class="mb-2"><span class="text-secondary">Username:</span> {{ profile_user.username }}</div>
+          {% if profile_user.first_name or profile_user.last_name %}
+            <div class="mb-2"><span class="text-secondary">Name:</span> {{ profile_user.first_name }} {{ profile_user.last_name }}</div>
+          {% endif %}
           {% if profile_user.email %}
-            <div class="mb-1">
-              <span class="text-secondary">Email:</span>
-              <span>{{ profile_user.email }}</span>
-            </div>
+            <div class="mb-2"><span class="text-secondary">Email:</span> {{ profile_user.email }}</div>
           {% endif %}
-          {% if profile_user.position %}
-            <div class="mb-1">
-              <span class="text-secondary">Position:</span>
-              <span>{{ profile_user.position.name }}</span>
-            </div>
-          {% endif %}
+          <!-- ... existing code ... -->
         </div>
       </div>
     </div>
-
-    <div class="col-12 col-lg-8">
+    <div class="col-lg-8">
       <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
           <strong>Current tasks</strong>
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-list' %}?my=1&done=0">Show all</a>
         </div>
         <div class="card-body p-0">
           {% if current_tasks %}
-            <ul class="list-group list-group-flush">
-              {% for t in current_tasks %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div class="me-3">
-                    <a class="fw-semibold" href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
-                    {% if t.task_type %}
-                      <small class="text-secondary ms-2">({{ t.task_type.name }})</small>
-                    {% endif %}
-                    {% if t.deadline %}
-                      <small class="text-secondary ms-2">due {{ t.deadline }}</small>
-                    {% endif %}
-                  </div>
-                  {% if t.is_completed %}
-                    <span class="badge text-bg-success">Done</span>
-                  {% else %}
-                    <span class="badge text-bg-warning">Open</span>
-                  {% endif %}
-                </li>
-              {% endfor %}
-            </ul>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Creator</th>
+                    <th>Assignees</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for task in current_tasks %}
+                    <tr class="{% if task.priority == 'urgent' %}table-danger{% elif task.priority == 'high' %}table-warning{% elif task.priority == 'medium' %}table-info{% else %}table-light{% endif %}">
+                      <td>
+                        <a class="fw-semibold link-plain" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
+                      </td>
+                      <td>{{ task.task_type.name|default:"—" }}</td>
+                      <td>{{ task.creator }}</td>
+                      <td style="min-width:140px;">
+                        {% for a in task.assignees.all %}
+                          <span class="badge text-bg-light me-1">{{ a.username }}</span>
+                        {% empty %}
+                          <span class="text-secondary">—</span>
+                        {% endfor %}
+                      </td>
+                      <td>{{ task.deadline|default:"—" }}</td>
+                      <td>
+                        {% if task.is_completed %}
+                          <span class="badge text-bg-success">Done</span>
+                        {% else %}
+                          <span class="badge text-bg-info">Open</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           {% else %}
-            <div class="p-3 text-secondary">No open tasks.</div>
+            <div class="p-3 text-secondary">No current tasks.</div>
           {% endif %}
         </div>
       </div>

@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import generic
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from tracker.models import Task, TaskType, Project, Team
 from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
@@ -47,33 +47,32 @@ class TaskFiltersMixin:
     def apply_task_filters(self, qs):
         if "q" in self.allowed_filters:
             if q := self.request.GET.get("q"):
-                qs = qs.filter(
-                    Q(name__icontains=q) | Q(description__icontains=q)
-                )
+                qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
 
         if "priority" in self.allowed_filters:
-            pr = self.request.GET.get("priority")
-            if pr:
-                val = None
-                if str(pr).isdigit():
-                    val = int(pr)
-                else:
-                    mapping = {
-                        "low": getattr(Task.Priority, "LOW", 1),
-                        "medium": getattr(Task.Priority, "MEDIUM", 2),
-                        "high": getattr(Task.Priority, "HIGH", 3),
-                        "urgent": getattr(Task.Priority, "URGENT", 4),
-                    }
-                    val = mapping.get(str(pr).lower())
-                if val is not None:
+            pr_raw = self.request.GET.get("priority")
+            if pr_raw:
+                pr = str(pr_raw).strip().lower()
+                numeric_map = {
+                    "1": Task.Priority.LOW,
+                    "2": Task.Priority.MEDIUM,
+                    "3": Task.Priority.HIGH,
+                    "4": Task.Priority.URGENT,
+                }
+                word_map = {
+                    "low": Task.Priority.LOW,
+                    "medium": Task.Priority.MEDIUM,
+                    "high": Task.Priority.HIGH,
+                    "urgent": Task.Priority.URGENT,
+                }
+                val = numeric_map.get(pr) or word_map.get(pr)
+                if val:
                     qs = qs.filter(priority=val)
 
         if "my" in self.allowed_filters and self.request.GET.get("my"):
             qs = qs.filter(assignees=self.request.user)
 
-        if "created" in self.allowed_filters and self.request.GET.get(
-            "created"
-        ):
+        if "created" in self.allowed_filters and self.request.GET.get("created"):
             qs = qs.filter(creator=self.request.user)
 
         if "done" in self.allowed_filters:
@@ -342,3 +341,16 @@ def my_profile_redirect(request):
     if not request.user.is_authenticated:
         return redirect("login")
     return redirect("tracker:user-profile", pk=request.user.pk)
+
+
+class BaseTaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
+    model = Task
+    paginate_by = 20
+    template_name = "tracker/task_list.html"
+
+    def base_qs(self):
+        return (
+            Task.objects.select_related("task_type", "creator")
+            .prefetch_related(Prefetch("assignees", queryset=User.objects.only("id", "username")))
+            .order_by("-created_at")
+        )
