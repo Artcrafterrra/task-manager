@@ -76,7 +76,7 @@
             </thead>
             <tbody>
               {% for task in items %}
-                <tr class="{% if task.priority == 'urgent' %}table-danger{% elif task.priority == 'high' %}table-warning{% elif task.priority == 'medium' %}table-info{% else %}table-light{% endif %}">
+                <tr class="{% if task.is_completed %}table-success{% elif task.priority == 'urgent' %}table-danger{% elif task.priority == 'high' %}table-warning{% elif task.priority == 'medium' %}table-info{% else %}table-light{% endif %}">
                   <td>
                     <div class="d-flex flex-column">
                       <a class="fw-semibold link-plain" href="{% url 'tracker:task-detail' task.pk %}">{{ task.name }}</a>
