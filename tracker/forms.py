@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
 from tracker.models import Task, Project, TaskType, Position
+from tracker.models import Team
 
 User = get_user_model()
 
@@ -193,3 +194,27 @@ class AvatarUploadForm(forms.ModelForm):
             raise
         except Exception:
             return f
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ["name", "team"]
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Project name"}
+            ),
+            "team": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "name": "Name",
+            "team": "Team",
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        if self.user and getattr(self.user, "is_authenticated", False):
+            self.fields["team"].queryset = Team.objects.filter(
+                members=self.user
+            ).order_by("name")

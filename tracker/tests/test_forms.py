@@ -80,7 +80,7 @@ class TestSignUpForm(TestCase):
                 "username": "jane",
                 "first_name": "Jane",
                 "last_name": "Doe",
-                "email": "USER@example.com",  # case-insensitive
+                "email": "USER@example.com",
                 "password1": "aStrongPassword123",
                 "password2": "aStrongPassword123",
                 "position": self.position.id,

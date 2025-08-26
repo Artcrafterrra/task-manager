@@ -35,8 +35,14 @@
       <li class="nav-item px-3 mt-2">
         <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:project-list' %}">All projects</a>
       </li>
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-primary btn-sm w-100" href="{% url 'tracker:project-create' %}">Create project</a>
+      </li>
     {% else %}
       <li class="nav-item px-3 text-secondary small">No projects yet</li>
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-primary btn-sm w-100" href="{% url 'tracker:project-create' %}">Create project</a>
+      </li>
     {% endif %}
 
     <li class="nav-title text-uppercase small text-secondary px-3 mt-3">My Teams</li>
