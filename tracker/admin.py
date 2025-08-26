@@ -9,6 +9,11 @@ from tracker.models import Position, TaskType, Task, Team, Project
 from .forms import AvatarUploadForm
 from .models import Worker
 
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
+
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
@@ -47,6 +52,56 @@ class WorkerAdmin(UserAdmin):
         return ", ".join(p.name for p in projects) or "—"
 
     projects_list.short_description = "Projects"
+
+    def save_model(self, request, obj, form, change):
+        def compress_image(f):
+            img = Image.open(f)
+            img.load()
+            max_size = (64, 64)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
+            has_alpha = img.mode in ("RGBA", "LA") or (
+                img.mode == "P" and "transparency" in img.info
+            )
+
+            buffer = BytesIO()
+            if has_alpha:
+                img = img.convert("RGBA")
+                img.save(buffer, format="PNG", optimize=True)
+                file_ext = "png"
+                content_type = "image/png"
+            else:
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                elif img.mode != "RGB":
+                    img = img.convert("RGB")
+                img.save(
+                    buffer,
+                    format="JPEG",
+                    quality=75,
+                    optimize=True,
+                    progressive=True,
+                )
+                file_ext = "jpg"
+                content_type = "image/jpeg"
+
+            buffer.seek(0)
+            return InMemoryUploadedFile(
+                buffer,
+                field_name="ImageField",
+                name=f"avatar_compressed.{file_ext}",
+                content_type=content_type,
+                size=buffer.getbuffer().nbytes,
+                charset=None,
+            )
+
+        avatar = form.cleaned_data.get("avatar")
+        if avatar:
+            try:
+                obj.avatar = compress_image(avatar)
+            except Exception:
+                pass
+        super().save_model(request, obj, form, change)
 
 
 class TeamMembershipInline(admin.TabularInline):
