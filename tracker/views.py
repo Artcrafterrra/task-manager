@@ -47,8 +47,6 @@ class TaskFiltersMixin:
     allowed_filters = set()
 
     def apply_task_filters(self, qs):
-        if not getattr(self.request.user, "position_id", None):
-            return qs.none()
 
         if "q" in self.allowed_filters:
             if q := self.request.GET.get("q"):
