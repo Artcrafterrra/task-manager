@@ -23,8 +23,8 @@
             <div class="text-secondary">Team: {{ project.team.name }}</div>
           {% endif %}
         </div>
-        <form class="d-flex flex-wrap align-items-center gap-2 ms-lg-3" method="get">
-          <div class="input-group input-group-sm" style="min-width:260px;">
+        <form class="d-flex flex-nowrap align-items-center gap-2 ms-lg-3" method="get">
+          <div class="input-group input-group-sm" style="flex: 1 1 260px; min-width: 0;">
             <span class="input-group-text"><i class="cil-search"></i></span>
             <input type="search" name="q" class="form-control" placeholder="Search tasks..."
                    value="{{ search_query|default:'' }}">
