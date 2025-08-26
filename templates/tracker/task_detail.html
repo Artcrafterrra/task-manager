@@ -35,13 +35,33 @@
       </div>
       <div class="col-12 col-md-6">
         <div><span class="text-secondary small">Created by</span></div>
-        <div>{{ object.creator }}</div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                style="width:22px;height:22px; overflow:hidden;">
+            {% if object.creator.avatar %}
+              <img src="{{ object.creator.avatar.url }}" alt="{{ object.creator.username }} avatar" style="width:22px; height:22px; object-fit:cover;">
+            {% else %}
+              <span class="text-white small">{{ object.creator.username|first|upper }}</span>
+            {% endif %}
+          </span>
+          <span>{{ object.creator }}</span>
+        </div>
       </div>
       <div class="col-12">
         <div><span class="text-secondary small">Assignees</span></div>
         <div>
           {% for a in object.assignees.all %}
-            <span class="badge text-bg-light me-1">{{ a.username }}</span>
+            <span class="badge text-bg-light me-1 d-inline-flex align-items-center gap-1" style="padding:.35rem .5rem;">
+              <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                    style="width:18px;height:18px; overflow:hidden;">
+                {% if a.avatar %}
+                  <img src="{{ a.avatar.url }}" alt="{{ a.username }} avatar" style="width:18px; height:18px; object-fit:cover;">
+                {% else %}
+                  <span class="text-white" style="font-size:11px;">{{ a.username|first|upper }}</span>
+                {% endif %}
+              </span>
+              <span>{{ a.username }}</span>
+            </span>
           {% empty %}
             <span class="text-secondary">—</span>
           {% endfor %}
