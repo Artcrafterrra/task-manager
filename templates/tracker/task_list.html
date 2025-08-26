@@ -80,10 +80,32 @@
                     </div>
                   </td>
                   <td>{{ task.task_type.name|default:"—" }}</td>
-                  <td>{{ task.creator }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                            style="width:22px;height:22px; overflow:hidden;">
+                        {% if task.creator.avatar %}
+                          <img src="{{ task.creator.avatar.url }}" alt="{{ task.creator.username }} avatar" style="width:22px; height:22px; object-fit:cover;">
+                        {% else %}
+                          <span class="text-white small">{{ task.creator.username|first|upper }}</span>
+                        {% endif %}
+                      </span>
+                      <span>{{ task.creator }}</span>
+                    </div>
+                  </td>
                   <td style="min-width:160px;">
                     {% for a in task.assignees.all %}
-                      <span class="badge text-bg-light me-1">{{ a.username }}</span>
+                      <span class="badge text-bg-light me-1 d-inline-flex align-items-center gap-1" style="padding:.35rem .5rem;">
+                        <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                              style="width:18px;height:18px; overflow:hidden;">
+                          {% if a.avatar %}
+                            <img src="{{ a.avatar.url }}" alt="{{ a.username }} avatar" style="width:18px; height:18px; object-fit:cover;">
+                          {% else %}
+                            <span class="text-white" style="font-size:11px;">{{ a.username|first|upper }}</span>
+                          {% endif %}
+                        </span>
+                        <span>{{ a.username }}</span>
+                      </span>
                     {% empty %}
                       <span class="text-secondary">—</span>
                     {% endfor %}
