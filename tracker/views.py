@@ -13,7 +13,6 @@ from tracker.forms import TaskForm, TaskTypeForm, SignUpForm, AvatarUploadForm
 User = get_user_model()
 
 
-
 class TeamMemberRequiredMixin(UserPassesTestMixin):
     team_pk_kwarg = "pk"
 
@@ -48,7 +47,6 @@ class TaskFiltersMixin:
     allowed_filters = set()
 
     def apply_task_filters(self, qs):
-        # Якщо в користувача немає позиції — не показуємо жодних задач
         if not getattr(self.request.user, "position_id", None):
             return qs.none()
 
@@ -277,22 +275,10 @@ class TeamTaskListView(
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
     paginate_by = 10
-    allowed_filters = {"q", "priority"}
+    allowed_filters = {"q", "priority", "done"}
+    # ... existing code ...
 
-    def get_queryset(self):
-        qs = (
-            Task.objects.select_related("task_type", "creator")
-            .prefetch_related("assignees")
-            .filter(project__team_id=self.kwargs["pk"])
-            .order_by("-created_at")
-        )
-        return self.apply_task_filters(qs).distinct()
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["search_query"] = self.request.GET.get("q", "")
-        return ctx
-
+# ... existing code ...
 
 class ProjectTaskListView(
     LoginRequiredMixin,
@@ -304,22 +290,8 @@ class ProjectTaskListView(
     template_name = "tracker/task_list.html"
     context_object_name = "tasks"
     paginate_by = 10
-    allowed_filters = {"q", "priority"}
-
-    def get_queryset(self):
-        qs = (
-            Task.objects.select_related("task_type", "creator")
-            .prefetch_related("assignees")
-            .filter(project_id=self.kwargs["pk"])
-            .order_by("-created_at")
-        )
-        return self.apply_task_filters(qs).distinct()
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["project"] = get_object_or_404(Project, pk=self.kwargs["pk"])
-        ctx["search_query"] = self.request.GET.get("q", "")
-        return ctx
+    allowed_filters = {"q", "priority", "done"}
+    # ... existing code ...
 
 
 class UserProfileView(

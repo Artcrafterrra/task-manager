@@ -23,8 +23,8 @@
             <div class="text-secondary">Team: {{ project.team.name }}</div>
           {% endif %}
         </div>
-        <form class="d-flex flex-nowrap align-items-center gap-2 ms-lg-3" method="get">
-          <div class="input-group input-group-sm" style="flex: 1 1 260px; min-width: 0;">
+        <form class="d-flex flex-wrap align-items-center gap-2 ms-lg-3" method="get">
+          <div class="input-group input-group-sm" style="min-width:260px;">
             <span class="input-group-text"><i class="cil-search"></i></span>
             <input type="search" name="q" class="form-control" placeholder="Search tasks..."
                    value="{{ search_query|default:'' }}">
@@ -36,12 +36,22 @@
             <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
             <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
           </select>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="hideDone" name="done" value="0"
+                   {% if request.GET.done == '0' %}checked{% endif %}
+                   onchange="this.form.submit()">
+            <label class="form-check-label small" for="hideDone">Hide completed</label>
+          </div>
           <button class="btn btn-sm btn-primary" type="submit">Apply</button>
-          {% if request.GET.q or request.GET.priority %}
+          {% if request.GET.q or request.GET.priority or request.GET.done %}
             <a class="btn btn-sm btn-outline-secondary" href="?">Clear</a>
           {% endif %}
           {% if project %}
             <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-create-in-project' project.pk %}">
+              <i class="cil-plus me-1"></i>Create
+            </a>
+          {% else %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-create' %}">
               <i class="cil-plus me-1"></i>Create
             </a>
           {% endif %}
@@ -133,7 +143,7 @@
             <span class="badge text-bg-light">No tasks found</span>
           </div>
           <div class="text-secondary mb-3">Try adjusting your search or filters.</div>
-          {% if request.GET.q or request.GET.priority %}
+          {% if request.GET.q or request.GET.priority or request.GET.done %}
             <a class="btn btn-sm btn-outline-secondary" href="?">Clear filters</a>
           {% endif %}
           {% if project %}
