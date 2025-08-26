@@ -276,9 +276,16 @@ class TeamTaskListView(
     context_object_name = "tasks"
     paginate_by = 10
     allowed_filters = {"q", "priority", "done"}
-    # ... existing code ...
 
-# ... existing code ...
+    def get_queryset(self):
+        qs = (
+            Task.objects.select_related("task_type", "creator", "project", "project__team")
+            .prefetch_related("assignees")
+            .filter(project__team_id=self.kwargs["pk"])
+            .order_by("-created_at")
+        )
+        return self.apply_task_filters(qs).distinct()
+
 
 class ProjectTaskListView(
     LoginRequiredMixin,
@@ -291,7 +298,20 @@ class ProjectTaskListView(
     context_object_name = "tasks"
     paginate_by = 10
     allowed_filters = {"q", "priority", "done"}
-    # ... existing code ...
+
+    def get_queryset(self):
+        qs = (
+            Task.objects.select_related("task_type", "creator", "project", "project__team")
+            .prefetch_related("assignees")
+            .filter(project_id=self.kwargs["pk"])
+            .order_by("-created_at")
+        )
+        return self.apply_task_filters(qs).distinct()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["project"] = get_object_or_404(Project, pk=self.kwargs["pk"])
+        return ctx
 
 
 class UserProfileView(
