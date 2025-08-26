@@ -70,4 +70,3 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "team")
     search_fields = ["name"]
     autocomplete_fields = ("team",)
-
