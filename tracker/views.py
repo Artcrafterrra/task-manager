@@ -1,14 +1,17 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.db.models import Q, Prefetch
 
-from tracker.models import Task, TaskType, Project, Team
-from tracker.forms import TaskForm, TaskTypeForm, SignUpForm
+from tracker.models import Task, TaskType, Project, Team, Worker
+from tracker.forms import TaskForm, TaskTypeForm, SignUpForm, AvatarUploadForm
 
 User = get_user_model()
+
 
 
 class TeamMemberRequiredMixin(UserPassesTestMixin):
@@ -372,3 +375,23 @@ class BaseTaskListView(
             )
             .order_by("-created_at")
         )
+
+
+@login_required
+def user_avatar_upload(request, pk):
+    profile_user = get_object_or_404(Worker, pk=pk)
+    if request.user != profile_user and not request.user.is_staff:
+        messages.error(request, "No permission to edit this profile.")
+        return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
+
+    if request.method == "POST":
+        form = AvatarUploadForm(request.POST, request.FILES, instance=profile_user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Avatar updated.")
+        else:
+            for err in form.errors.get("avatar", []):
+                messages.error(request, err)
+        return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
+
+    return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))

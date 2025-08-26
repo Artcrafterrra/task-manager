@@ -1,4 +1,5 @@
 from django import forms
+from .models import Worker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
@@ -83,7 +84,6 @@ class TaskTypeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Ensure all fields have CoreUI/Bootstrap styles if added later
         for f in self.fields.values():
             css = f.widget.attrs.get("class", "")
             if "form-control" not in css and not isinstance(
@@ -121,3 +121,19 @@ class SignUpForm(UserCreationForm):
                 "User with such email already exists."
             )
         return email
+
+
+class AvatarUploadForm(forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ("avatar",)
+
+    def clean_avatar(self):
+        f = self.cleaned_data.get("avatar")
+        if not f:
+            return f
+        if f.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("Файл завеликий (макс. 5 МБ).")
+        if not getattr(f, "content_type", "").startswith("image/"):
+            raise forms.ValidationError("Потрібне зображення.")
+        return f

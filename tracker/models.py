@@ -1,6 +1,7 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 
 class Position(models.Model):
@@ -30,6 +31,13 @@ class Worker(AbstractUser):
         related_name="workers",
         null=True,
         blank=True,
+    )
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        storage=MediaCloudinaryStorage(),
+        null=True,
+        blank=True,
+        help_text="Image for profile",
     )
 
     class Meta:

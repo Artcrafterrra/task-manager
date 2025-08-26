@@ -1,6 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from tracker.models import Position, TaskType, Worker, Task, Team, Project
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+
+from tracker.models import Position, TaskType, Task, Team, Project
+from .forms import AvatarUploadForm
+from .models import Worker
 
 
 @admin.register(Position)
@@ -19,6 +26,10 @@ class TaskTypeAdmin(admin.ModelAdmin):
 class WorkerAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("Company info", {"fields": ("position",)}),
+        ("Profile", {"fields": ("avatar",)}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("Profile", {"fields": ("avatar",)}),
     )
     list_display = ("username", "email", "position", "is_staff", "is_active")
     list_filter = ("position", "is_staff", "is_active")
@@ -59,3 +70,4 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "team")
     search_fields = ["name"]
     autocomplete_fields = ("team",)
+
