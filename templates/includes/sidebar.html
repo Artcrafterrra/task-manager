@@ -11,7 +11,7 @@
       {% for t in sb_my_open_tasks %}
         <li class="nav-item px-3">
           <div class="d-flex justify-content-between align-items-center">
-            <a class="nav-link px-0" href="{% url 'tracker:task-detail' t.pk %}">{{ t.name }}</a>
+            <a class="nav-link px-0" href="{% url 'tracker:task-detail' t.pk %}" title="{{ t.name }}">{{ t.name|truncatechars:20 }}</a>
             {% if t.deadline %}<small class="text-secondary ms-2">{{ t.deadline }}</small>{% endif %}
           </div>
         </li>
