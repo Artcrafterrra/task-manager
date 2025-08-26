@@ -279,7 +279,9 @@ class TeamTaskListView(
 
     def get_queryset(self):
         qs = (
-            Task.objects.select_related("task_type", "creator", "project", "project__team")
+            Task.objects.select_related(
+                "task_type", "creator", "project", "project__team"
+            )
             .prefetch_related("assignees")
             .filter(project__team_id=self.kwargs["pk"])
             .order_by("-created_at")
@@ -301,7 +303,9 @@ class ProjectTaskListView(
 
     def get_queryset(self):
         qs = (
-            Task.objects.select_related("task_type", "creator", "project", "project__team")
+            Task.objects.select_related(
+                "task_type", "creator", "project", "project__team"
+            )
             .prefetch_related("assignees")
             .filter(project_id=self.kwargs["pk"])
             .order_by("-created_at")
@@ -334,7 +338,9 @@ class UserProfileView(
         profile_user = self.object
         if getattr(profile_user, "position_id", None):
             ctx["current_tasks"] = (
-                Task.objects.filter(assignees=profile_user, is_completed=False)
+                Task.objects.filter(
+                    assignees=profile_user, is_completed=False
+                )
                 .select_related("task_type", "creator")
                 .prefetch_related("assignees")
                 .order_by("deadline", "-priority", "-created_at")
@@ -374,16 +380,22 @@ def user_avatar_upload(request, pk):
     profile_user = get_object_or_404(Worker, pk=pk)
     if request.user != profile_user and not request.user.is_staff:
         messages.error(request, "No permission to edit this profile.")
-        return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
+        return redirect(
+            reverse("tracker:user-profile", args=[profile_user.pk])
+        )
 
     if request.method == "POST":
-        form = AvatarUploadForm(request.POST, request.FILES, instance=profile_user)
+        form = AvatarUploadForm(
+            request.POST, request.FILES, instance=profile_user
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Avatar updated.")
         else:
             for err in form.errors.get("avatar", []):
                 messages.error(request, err)
-        return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
+        return redirect(
+            reverse("tracker:user-profile", args=[profile_user.pk])
+        )
 
     return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
