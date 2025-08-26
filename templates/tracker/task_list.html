@@ -23,7 +23,7 @@
             <div class="text-secondary">Team: {{ project.team.name }}</div>
           {% endif %}
         </div>
-        <form class="d-flex flex-wrap align-items-center gap-2 ms-lg-3" method="get">
+        <form class="d-flex flex-wrap align-items-center gap-2 ms-lg-3" method="get" action="{{ request.path }}">
           <div class="input-group input-group-sm" style="min-width:260px;">
             <span class="input-group-text"><i class="cil-search"></i></span>
             <input type="search" name="q" class="form-control" placeholder="Search tasks..."
@@ -44,7 +44,7 @@
           </div>
           <button class="btn btn-sm btn-primary" type="submit">Apply</button>
           {% if request.GET.q or request.GET.priority or request.GET.done %}
-            <a class="btn btn-sm btn-outline-secondary" href="?">Clear</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ request.path }}">Clear</a>
           {% endif %}
           {% if project %}
             <a class="btn btn-sm btn-outline-primary" href="{% url 'tracker:task-create-in-project' project.pk %}">
@@ -144,7 +144,7 @@
           </div>
           <div class="text-secondary mb-3">Try adjusting your search or filters.</div>
           {% if request.GET.q or request.GET.priority or request.GET.done %}
-            <a class="btn btn-sm btn-outline-secondary" href="?">Clear filters</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ request.path }}">Clear filters</a>
           {% endif %}
           {% if project %}
             <a class="btn btn-sm btn-primary ms-2" href="{% url 'tracker:task-create-in-project' project.pk %}">
