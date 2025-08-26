@@ -7,6 +7,11 @@ from tracker.models import Task, Project, TaskType, Position
 
 User = get_user_model()
 
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
+
 
 class TaskForm(forms.ModelForm):
     assignees = forms.ModelMultipleChoiceField(
@@ -133,7 +138,58 @@ class AvatarUploadForm(forms.ModelForm):
         if not f:
             return f
         if f.size > 5 * 1024 * 1024:
-            raise forms.ValidationError("Файл завеликий (макс. 5 МБ).")
+            raise forms.ValidationError("File is too large (max. 5 MB).")
         if not getattr(f, "content_type", "").startswith("image/"):
-            raise forms.ValidationError("Потрібне зображення.")
-        return f
+            raise forms.ValidationError("Image is required.")
+
+        try:
+            f.open()
+        except Exception:
+            pass
+
+        try:
+            img = Image.open(f)
+            img.load()
+
+            max_size = (64, 64)
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
+            has_alpha = img.mode in ("RGBA", "LA") or (
+                img.mode == "P" and "transparency" in img.info
+            )
+
+            buffer = BytesIO()
+            if has_alpha:
+                img = img.convert("RGBA")
+                img.save(buffer, format="PNG", optimize=True)
+                file_ext = "png"
+                content_type = "image/png"
+            else:
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                elif img.mode != "RGB":
+                    img = img.convert("RGB")
+                img.save(
+                    buffer,
+                    format="JPEG",
+                    quality=75,
+                    optimize=True,
+                    progressive=True,
+                )
+                file_ext = "jpg"
+                content_type = "image/jpeg"
+
+            buffer.seek(0)
+            compressed_file = InMemoryUploadedFile(
+                buffer,
+                field_name="ImageField",
+                name=f"avatar_compressed.{file_ext}",
+                content_type=content_type,
+                size=sys.getsizeof(buffer),
+                charset=None,
+            )
+            return compressed_file
+        except forms.ValidationError:
+            raise
+        except Exception:
+            return f
