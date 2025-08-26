@@ -1,0 +1,32 @@
+<header class="header header-sticky mb-4">
+  <div class="container-fluid d-flex align-items-center">
+    <button id="sidebarToggler" class="header-toggler px-md-0 me-md-3" type="button" aria-label="Toggle sidebar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <ul class="header-nav ms-3">
+      <li class="nav-item"><a class="nav-link" href="{% url 'tracker:task-list' %}">Tasks</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'tracker:project-list' %}">Projects</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'tracker:team-list' %}">Teams</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'tracker:tasktype-list' %}">Task Types</a></li>
+    </ul>
+    <ul class="header-nav ms-auto me-4">
+      {% if request.user.is_authenticated %}
+        <li class="nav-item d-flex align-items-center me-2 text-secondary">
+          Hello, {{ request.user }}!
+        </li>
+        <li class="nav-item me-2">
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'tracker:my-profile' %}">My profile</a>
+        </li>
+        <li class="nav-item">
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Logout</button>
+          </form>
+        </li>
+      {% else %}
+        <li class="nav-item me-2"><a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a></li>
+        <li class="nav-item"><a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Sign up</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</header>

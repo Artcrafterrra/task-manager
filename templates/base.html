@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-coreui-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}IT Tasks{% endblock %}</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.1/dist/css/coreui.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@coreui/icons@3.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <style>
+      .app-body { display: flex; min-height: calc(100vh - 56px); }
+      .main { flex: 1; padding: 1rem; }
+      .container-lg { max-width: 1320px; }
+      :root { --sidebar-width: 16rem; }
+      @media (min-width: 992px) {
+        body.has-sidebar .header{
+          margin-left: var(--sidebar-width);
+        }
+        body.has-sidebar .app-body .wrapper {
+          margin-left: var(--sidebar-width);
+        }
+      }
+      @media (max-width: 991.98px) {
+        .sidebar.sidebar-fixed {
+          transform: translateX(-100%);
+          transition: transform .2s ease-in-out;
+        }
+        .sidebar.sidebar-fixed.sidebar-show {
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+  <body class="c-app{% if request.user.is_authenticated %} has-sidebar{% endif %}">
+    {% include "includes/header.html" %}
+    <div class="app-body">
+      {% if request.user.is_authenticated %}
+        <div class="sidebar sidebar-dark sidebar-fixed" id="sidebar">
+          <div class="sidebar-brand d-none d-md-flex align-items-center justify-content-center">
+            <span class="fw-bold">IT Tasks</span>
+          </div>
+          {% include "includes/sidebar.html" %}
+        </div>
+      {% endif %}
+      <div class="wrapper d-flex flex-column min-vh-100 w-100">
+        <div class="body flex-grow-1 px-3">
+          <div class="container-lg">
+            <main class="main">
+              {% block content %}{% endblock %}
+              {% include "includes/pagination.html" %}
+            </main>
+          </div>
+        </div>
+        <footer class="footer">
+          <div class="ms-auto">
+            <span class="text-secondary">Powered by CoreUI</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@4.3.1/dist/js/coreui.bundle.min.js"></script>
+    <script>
+      (function () {
+        const sidebar = document.getElementById('sidebar');
+        const toggler = document.getElementById('sidebarToggler');
+        if (sidebar && toggler) {
+          toggler.addEventListener('click', function () {
+            sidebar.classList.toggle('sidebar-show');
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

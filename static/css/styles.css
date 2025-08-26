@@ -1,0 +1,46 @@
+:root {
+  --sidebar-width: 16rem;
+}
+
+.app-body {
+  display: flex;
+  min-height: calc(100vh - 56px);
+}
+
+.main {
+  flex: 1;
+  padding: 1rem;
+}
+
+.container-lg {
+  max-width: 1320px;
+}
+
+@media (min-width: 992px) {
+  body.has-sidebar .header {
+    margin-left: var(--sidebar-width);
+  }
+  body.has-sidebar .app-body .wrapper {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .sidebar.sidebar-fixed {
+    transform: translateX(-100%);
+    transition: transform .2s ease-in-out;
+  }
+  .sidebar.sidebar-fixed.sidebar-show {
+    transform: translateX(0);
+  }
+}
+
+a.link-plain {
+  color: inherit;
+  text-decoration: none;
+}
+a.link-plain:hover,
+a.link-plain:focus {
+  color: inherit;
+  text-decoration: none;
+}
