@@ -53,6 +53,7 @@ class Worker(AbstractUser):
         super().save(*args, **kwargs)
         if is_new:
             from .models import Team
+
             team_name = getattr(settings, "DEFAULT_TEAM_NAME", "Team One")
             team, _ = Team.objects.get_or_create(name=team_name)
             team.members.add(self)

@@ -25,7 +25,7 @@ class TestModels(TestCase):
         self.assertEqual(str(self.position), "Developer")
         self.assertEqual(str(self.task_type), "Bug")
         user = User.objects.create_user(username="jane", password="pass12345")
-        self.assertEqual(str(user), "jane")  # без імені показує username
+        self.assertEqual(str(user), "jane")
         tag = Tag.objects.create(name="backend")
         self.assertEqual(str(tag), "backend")
         task = Task.objects.create(

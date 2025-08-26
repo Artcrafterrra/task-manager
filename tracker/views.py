@@ -9,6 +9,7 @@ from django.db.models import Q, Prefetch
 
 from tracker.models import Task, TaskType, Project, Team, Worker
 from tracker.forms import TaskForm, TaskTypeForm, SignUpForm, AvatarUploadForm
+from tracker.forms import ProjectForm
 
 User = get_user_model()
 
@@ -47,6 +48,12 @@ class TaskFiltersMixin:
     allowed_filters = set()
 
     def apply_task_filters(self, qs):
+        if not getattr(self.request.user, "is_staff", False):
+            qs = qs.filter(
+                Q(project__team__members=self.request.user)
+                | Q(project__isnull=True, assignees=self.request.user)
+                | Q(project__isnull=True, creator=self.request.user)
+            )
 
         if "q" in self.allowed_filters:
             if q := self.request.GET.get("q"):
@@ -101,10 +108,18 @@ class TaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
 
     def get_queryset(self):
         qs = (
-            Task.objects.select_related("task_type", "creator")
+            Task.objects.select_related(
+                "task_type", "creator", "project", "project__team"
+            )
             .prefetch_related("assignees")
             .order_by("-created_at")
         )
+        if not getattr(self.request.user, "is_staff", False):
+            qs = qs.filter(
+                Q(project__team__members=self.request.user)
+                | Q(project__isnull=True, assignees=self.request.user)
+                | Q(project__isnull=True, creator=self.request.user)
+            )
         return self.apply_task_filters(qs).distinct()
 
     def get_context_data(self, **kwargs):
@@ -116,6 +131,22 @@ class TaskListView(LoginRequiredMixin, TaskFiltersMixin, generic.ListView):
 class TaskDetailView(LoginRequiredMixin, generic.DetailView):
     model = Task
     template_name = "tracker/task_detail.html"
+
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related(
+                "task_type", "creator", "project", "project__team"
+            )
+        )
+        if getattr(self.request.user, "is_staff", False):
+            return qs.distinct()
+        return qs.filter(
+            Q(project__team__members=self.request.user)
+            | Q(project__isnull=True, assignees=self.request.user)
+            | Q(project__isnull=True, creator=self.request.user)
+        ).distinct()
 
 
 class TaskCreateView(LoginRequiredMixin, generic.CreateView):
@@ -163,6 +194,22 @@ class TaskUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Task
     form_class = TaskForm
     success_url = reverse_lazy("tracker:task-list")
+
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related(
+                "task_type", "creator", "project", "project__team"
+            )
+        )
+        if getattr(self.request.user, "is_staff", False):
+            return qs.distinct()
+        return qs.filter(
+            Q(project__team__members=self.request.user)
+            | Q(project__isnull=True, assignees=self.request.user)
+            | Q(project__isnull=True, creator=self.request.user)
+        ).distinct()
 
 
 def task_toggle_complete(request, pk: int):
@@ -397,3 +444,27 @@ def user_avatar_upload(request, pk):
         )
 
     return redirect(reverse("tracker:user-profile", args=[profile_user.pk]))
+
+
+class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = "tracker/project_form.html"
+    success_url = None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        team = form.cleaned_data.get("team")
+        if not Team.objects.filter(
+            pk=team.pk, members=self.request.user
+        ).exists():
+            form.add_error("team", "You don't have access to this team.")
+            return self.form_invalid(form)
+        self.object = form.save()
+        return redirect(
+            reverse("tracker:project-tasks", args=[self.object.pk])
+        )
