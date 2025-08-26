@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy
@@ -46,6 +47,15 @@ class Worker(AbstractUser):
     def __str__(self):
         full = self.get_full_name()
         return full or self.username
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            from .models import Team
+            team_name = getattr(settings, "DEFAULT_TEAM_NAME", "Team One")
+            team, _ = Team.objects.get_or_create(name=team_name)
+            team.members.add(self)
 
 
 class Tag(models.Model):
