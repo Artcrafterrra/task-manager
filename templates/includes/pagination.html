@@ -1,0 +1,17 @@
+{% if is_paginated %}
+  <nav aria-label="Pagination" class="mt-3">
+    <ul class="pagination pagination-sm mb-0">
+      {% with qs=request.GET.urlencode %}
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+          <a class="page-link" href="{% if page_obj.has_previous %}{% if qs %}?{{ qs }}&{% else %}?{% endif %}page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">Prev</a>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        </li>
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{% if page_obj.has_next %}{% if qs %}?{{ qs }}&{% else %}?{% endif %}page={{ page_obj.next_page_number }}{% else %}#{% endif %}">Next</a>
+        </li>
+      {% endwith %}
+    </ul>
+  </nav>
+{% endif %}
