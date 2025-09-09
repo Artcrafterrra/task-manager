@@ -32,7 +32,7 @@ Or just sign up via Google
 - A Google Cloud project with OAuth credentials (for Google login)
 - A Cloudinary account (for media storage)
 
-## Getting Started for Local Development
+## Instruction for local development
 1. Clone the repository
 ``` bash
 # Bash
