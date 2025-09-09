@@ -1,5 +1,15 @@
 # IT Tasks Tracker
 A Django-based web application for tracking tasks with user authentication, Google OAuth integration, and media storage via Cloudinary. Optimized for serving static files in production with WhiteNoise.
+
+## Demo
+Deployed at https://task-manager-mpqv.onrender.com/
+
+Test credentials:
+- login: test_user
+- password: Pass123456
+
+Or just sign up via Google
+
 ## Features
 - User authentication (username/password via Django Allauth)
 - Google OAuth login
@@ -22,7 +32,7 @@ A Django-based web application for tracking tasks with user authentication, Goog
 - A Google Cloud project with OAuth credentials (for Google login)
 - A Cloudinary account (for media storage)
 
-## Getting Started
+## Getting Started for Local Development
 1. Clone the repository
 ``` bash
 # Bash
@@ -133,12 +143,3 @@ python manage.py createsuperuser
 python manage.py runserver
 python manage.py collectstatic
 ```
-## Troubleshooting
-- Authentication issues with Google: verify redirect URIs and that CLIENT_ID/CLIENT_SECRET are correct.
-- Cloudinary upload errors: ensure all Cloudinary variables are set and valid.
-- Static files missing in production: verify collectstatic ran successfully and that your server serves the static root.
-
-## Contributing
-1. Fork the repo
-2. Create a feature branch
-3. Submit a pull request with a clear description
