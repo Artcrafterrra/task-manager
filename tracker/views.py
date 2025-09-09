@@ -258,7 +258,13 @@ class SignUpView(UserPassesTestMixin, generic.CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        login(self.request, self.object)
+        # Раніше було: login(self.request, self.object)
+        # При наявності кількох бекендів необхідно вказати backend
+        login(
+            self.request,
+            self.object,
+            backend="django.contrib.auth.backends.ModelBackend",
+        )
         return response
 
     def get_success_url(self):
