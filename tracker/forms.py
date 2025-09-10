@@ -130,12 +130,16 @@ class SignUpForm(UserCreationForm):
     )
     email = forms.EmailField(required=False, label="Email")
     position = forms.ModelChoiceField(
-        queryset=Position.objects.all(), required=False, label="Position"
+        queryset=Position.objects.all(),
+        required=False,
+        label="Position",
+        empty_label="Select position",
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("username", "first_name", "last_name", "email")
+        fields = ("username", "first_name", "last_name", "email", "position")
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").strip().lower()
@@ -144,6 +148,24 @@ class SignUpForm(UserCreationForm):
                 "User with such email already exists."
             )
         return email
+
+    def clean_position(self):
+        pos = self.cleaned_data.get("position")
+        if not pos:
+            raise forms.ValidationError("Please select a position.")
+        return pos
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        pos = self.cleaned_data.get("position")
+        if not pos:
+            pos = Position.objects.filter(name__iexact="Developer").first()
+            if not pos:
+                pos = Position.objects.create(name="Developer")
+        user.position = pos
+        if commit:
+            user.save()
+        return user
 
 
 class AvatarUploadForm(forms.ModelForm):

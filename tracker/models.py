@@ -52,6 +52,12 @@ class Worker(AbstractUser):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        if self.position_id is None:
+            default_pos = Position.objects.filter(name__iexact="Developer").first()
+            if default_pos is None:
+                default_pos = Position.objects.create(name="Developer")
+            self.position = default_pos
+
         super().save(*args, **kwargs)
         if is_new:
             from .models import Team
