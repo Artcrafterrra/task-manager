@@ -211,6 +211,31 @@ class TaskUpdateView(LoginRequiredMixin, generic.UpdateView):
             | Q(project__isnull=True, creator=self.request.user)
         ).distinct()
 
+class TaskDeleteView(LoginRequiredMixin, generic.DeleteView):
+    model = Task
+    template_name = "tracker/task_confirm_delete.html"
+    success_url = reverse_lazy("tracker:task-list")
+
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related(
+                "task_type", "creator", "project", "project__team"
+            )
+        )
+        if getattr(self.request.user, "is_staff", False):
+            return qs.distinct()
+        return qs.filter(
+            Q(project__team__members=self.request.user)
+            | Q(project__isnull=True, assignees=self.request.user)
+            | Q(project__isnull=True, creator=self.request.user)
+        ).distinct()
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        messages.success(request, "Delete successful.")
+        return response
 
 def task_toggle_complete(request, pk: int):
     task = get_object_or_404(Task, pk=pk)

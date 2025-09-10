@@ -16,6 +16,7 @@ from tracker.views import (
     my_profile_redirect,
     user_avatar_upload,
     ProjectCreateView,
+    TaskDeleteView,
 )
 
 app_name = "tracker"
@@ -28,6 +29,7 @@ urlpatterns = [
         "tasks/<int:pk>/update/", TaskUpdateView.as_view(), name="task-update"
     ),
     path("tasks/<int:pk>/toggle/", task_toggle_complete, name="task-toggle"),
+    path("tasks/<int:pk>/delete/", TaskDeleteView.as_view(), name="task-delete"),
     path("types/", TaskTypeListView.as_view(), name="tasktype-list"),
     path(
         "types/create/", TaskTypeCreateView.as_view(), name="tasktype-create"
