@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import TruncDate
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy
 from cloudinary_storage.storage import MediaCloudinaryStorage
@@ -106,7 +108,6 @@ class Task(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True)
     deadline = models.DateField(null=True, blank=True)
-    is_completed = models.BooleanField(default=False, db_index=True)
     priority = models.CharField(
         max_length=10,
         choices=Priority.choices,
@@ -136,6 +137,7 @@ class Task(models.Model):
         null=True,
         blank=True,
     )
+    is_completed = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -145,9 +147,8 @@ class Task(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
+                check=Q(deadline__isnull=True) | Q(deadline__gte=TruncDate("created_at")),
                 name="deadline_not_before_created",
-                check=models.Q(deadline__isnull=True)
-                | models.Q(deadline__gte=models.F("created_at")),
             ),
         ]
 

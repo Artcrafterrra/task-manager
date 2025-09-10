@@ -33,6 +33,7 @@ class TaskForm(forms.ModelForm):
             "task_type",
             "assignees",
             "project",
+            "is_completed",
         ]
         widgets = {
             "name": forms.TextInput(
@@ -43,6 +44,12 @@ class TaskForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "Describe the task...",
                     "rows": 8,
+                }
+            ),
+            "deadline": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
                 }
             ),
             "deadline": forms.DateInput(
