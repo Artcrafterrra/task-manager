@@ -2,6 +2,7 @@ from django import forms
 from .models import Worker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from django.utils import timezone
 
 from tracker.models import Task, Project, TaskType, Position
 from tracker.models import Team
@@ -66,6 +67,15 @@ class TaskForm(forms.ModelForm):
                     .distinct()
                 )
             self.fields["project"].label = "Project"
+
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get("deadline")
+        if not deadline:
+            return deadline
+        today = timezone.localdate()
+        if deadline < today:
+            raise forms.ValidationError("Deadline cannot be in the past.")
+        return deadline
 
 
 class TaskTypeForm(forms.ModelForm):
