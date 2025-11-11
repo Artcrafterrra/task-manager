@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% block title %}Login{% endblock %}
+{% block content %}
+  <div class="card" style="max-width:720px;margin:0 auto;">
+    <div class="card-header">
+      <strong>Login</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 mb-3">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="{{ form.username.id_for_label }}" class="form-label d-block">Username</label>
+            {{ form.username }}
+            {% for err in form.username.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+          </div>
+
+          <div class="col-12">
+            <label for="{{ form.password.id_for_label }}" class="form-label d-block">Password</label>
+            {{ form.password }}
+            {% for err in form.password.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+          </div>
+
+          {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+          {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <a href="{% url 'signup' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="cil-user-follow me-1"></i>Sign up
+          </a>
+          <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center">
+            <i class="cil-account-login me-1"></i>Login
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-secondary">Or continue with:</div>
+        <a href="{% provider_login_url 'google' process='login' %}"
+           class="btn btn-sm btn-outline-danger d-inline-flex align-items-center">
+          <i class="cib-google me-1"></i> Sign in with Google
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

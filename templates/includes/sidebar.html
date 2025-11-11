@@ -1,0 +1,66 @@
+<nav class="sidebar-nav">
+  <ul class="nav flex-column">
+
+    <li class="nav-item px-3 pt-3 pb-2">
+      <div class="fw-semibold">{{ sb_user.get_full_name|default:sb_user.username }}</div>
+      <div class="text-secondary small">{{ sb_user.position.name|default:"No position" }}</div>
+    </li>
+
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-2">My Tasks</li>
+    {% if sb_my_open_tasks %}
+      {% for t in sb_my_open_tasks %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:task-detail' t.pk %}" title="{{ t.name }}">{{ t.name|truncatechars:25 }}</a>
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mb-2">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:task-list' %}?my=1&done=0">Show all</a>
+      </li>
+    {% else %}
+      <li class="nav-item px-3 text-secondary small">No open tasks</li>
+    {% endif %}
+
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-3">My Projects</li>
+    {% if sb_projects %}
+      {% for p in sb_projects %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:project-tasks' p.pk %}">{{ p.name }}</a>
+            <a class="btn btn-outline-secondary btn-sm ms-2" href="{% url 'tracker:task-create-in-project' p.pk %}">Create</a>
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:project-list' %}">All projects</a>
+      </li>
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-primary btn-sm w-100" href="{% url 'tracker:project-create' %}">Create project</a>
+      </li>
+    {% else %}
+      <li class="nav-item px-3 text-secondary small">No projects yet</li>
+      <li class="nav-item px-3 mt-2">
+        <a class="btn btn-primary btn-sm w-100" href="{% url 'tracker:project-create' %}">Create project</a>
+      </li>
+    {% endif %}
+
+    <li class="nav-title text-uppercase small text-secondary px-3 mt-3">My Teams</li>
+    {% if sb_teams %}
+      {% for tm in sb_teams %}
+        <li class="nav-item px-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <a class="nav-link px-0" href="{% url 'tracker:team-tasks' tm.pk %}">{{ tm.name }}</a>
+            <a class="btn btn-outline-secondary btn-sm ms-2" href="{% url 'tracker:team-projects' tm.pk %}">Projects</a>
+          </div>
+        </li>
+      {% endfor %}
+      <li class="nav-item px-3 mt-2 mb-3">
+        <a class="btn btn-outline-light btn-sm w-100" href="{% url 'tracker:team-list' %}">All teams</a>
+      </li>
+    {% else %}
+      <li class="nav-item px-3 text-secondary small">No teams yet</li>
+    {% endif %}
+
+  </ul>
+</nav>

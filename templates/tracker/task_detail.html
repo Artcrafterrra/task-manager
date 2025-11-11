@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <strong class="fs-5">{{ object.name }}</strong>
+      {% if object.is_completed %}
+        <span class="text-success" title="Done" aria-label="Done"><i class="cil-check-circle"></i></span>
+      {% else %}
+        <span class="text-warning" title="Open" aria-label="Open"><i class="cil-hourglass"></i></span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:task-update' object.pk %}">Edit</a>
+      <form action="{% url 'tracker:task-toggle' object.pk %}" method="post" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-primary">Toggle status</button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Type</span></div>
+        <div>{{ object.task_type.name|default:"—" }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Priority</span></div>
+        <div>{{ object.get_priority_display }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Deadline</span></div>
+        <div>{% if object.deadline %}<i class="cil-calendar me-1 text-secondary"></i>{{ object.deadline }}{% else %}—{% endif %}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div><span class="text-secondary small">Created by</span></div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                style="width:22px;height:22px; overflow:hidden;">
+            {% if object.creator.avatar %}
+              <img src="{{ object.creator.avatar.url }}" alt="{{ object.creator.username }} avatar" style="width:22px; height:22px; object-fit:cover;">
+            {% else %}
+              <span class="text-white small">{{ object.creator.username|first|upper }}</span>
+            {% endif %}
+          </span>
+          <span>{{ object.creator }}</span>
+        </div>
+      </div>
+      <div class="col-12">
+        <div><span class="text-secondary small">Assignees</span></div>
+        <div>
+          {% for a in object.assignees.all %}
+            <span class="badge text-bg-light me-1 d-inline-flex align-items-center gap-1" style="padding:.35rem .5rem;">
+              <span class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                    style="width:18px;height:18px; overflow:hidden;">
+                {% if a.avatar %}
+                  <img src="{{ a.avatar.url }}" alt="{{ a.username }} avatar" style="width:18px; height:18px; object-fit:cover;">
+                {% else %}
+                  <span class="text-white" style="font-size:11px;">{{ a.username|first|upper }}</span>
+                {% endif %}
+              </span>
+              <span>{{ a.username }}</span>
+            </span>
+          {% empty %}
+            <span class="text-secondary">—</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% if object.description %}
+      <hr>
+      <div>
+        <span class="text-secondary small">Description</span>
+        <div class="mt-1">{{ object.description|linebreaks }}</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<form method="post" action="{% url 'tracker:task-delete' object.pk %}" class="d-inline">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+</form>
+
+{% endblock %}
